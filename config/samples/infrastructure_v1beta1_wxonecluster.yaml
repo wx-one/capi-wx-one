@@ -1,0 +1,9 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: WXOneCluster
+metadata:
+  labels:
+    app.kubernetes.io/name: cluster-api-provider-wxone-2
+    app.kubernetes.io/managed-by: kustomize
+  name: wxonecluster-sample
+spec:
+  # TODO(user): Add fields here

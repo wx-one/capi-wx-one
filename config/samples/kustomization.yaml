@@ -1,0 +1,7 @@
+## Append samples of your project ##
+resources:
+- infrastructure_v1beta1_wxonecluster.yaml
+- infrastructure_v1beta1_wxoneclustertemplate.yaml
+- infrastructure_v1beta1_wxonemachinetemplate.yaml
+- infrastructure_v1beta1_wxonemachine.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
