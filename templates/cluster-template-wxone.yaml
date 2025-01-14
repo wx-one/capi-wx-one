@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "${NAMESPACE}"
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: "${CLUSTER_NAME}"
+  namespace: "${NAMESPACE}"
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 10.45.0.0/16
+    serviceDomain: cluster.local
+    services:
+      cidrBlocks:
+      - 10.46.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: RKE2ControlPlane
+    name: "${CLUSTER_NAME}-control-plane"
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: WXOneCluster
+    name: "${CLUSTER_NAME}"
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: WXOneCluster
+metadata:
+  name: "${CLUSTER_NAME}"
+  namespace: "${NAMESPACE}"
+spec:
+  project: 
+    name: default
+  availabilityZone: wx_dus_1
+  network: 
+    name: capi-cluster  
+    subnets: 
+    - name: capi-cluster-subnet
+      ipversion: IPv4
+      cidr: 10.0.0.0/24
+  sshKey: 
+    name: capi-cluster
+    publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDCfVixvEmrQlN5mCQTDUupJeZSKl8TeDOl1Bi5QMx2fxX0UmxfC2hY9bXnUzJtSw8GECyzFApbmQPeY/K2O/+tZv6fKs6/wzQ0gxiQnj2dYnjDlwNx9dxEwsUt8bpyCHkGdP7Mptll43nfl8Ct7r/I3qErB20mCNgJbp7kXGEJIgcn/M+hPrNQXh8AsFxkieCb9Mdnsn/ZnffcHeExnproUGX5Z46sWfrfq9mnOiOEYITknQuzReHDptF+jzu70LFlU30J/WutDQEKjeEVDMk/i4Dr0MMIRTPsYzOibPLhQowT+1+dllfPeukEZBJAkyB9YNG4U2Q+Cf/cGPTL7EH+pZtTibsucP8iAFeE5SkDO75C9JRVJjf6RgqffLXwUIA+pygVZbV3uaWF9VXuB8vGJqtlpZyLlPoRofBcHCRWEHLRd1rqVDbC+nNZD/wlDEHUCvyHNL8E9YmZRxDO93byIPjx0gCUmNme3lXDf+urKJiyyPBAfIRlyerTJ07duMOmOP5UiRsHcziCTp+SslTovKTD6ICeniD6K9U5qGWv2oV8WiKXNzw9oziaN6iyBm0X8tsqecV5hlgdrf0ZHvroWRHzyDoK3vwz6UFR8DqkSC/WxqitQSV7yGVyGSt6IyslPORZ/+0DI3dFdbAzOma6zYTSZIqiuf+/CqEefMv87Q== bc.christianwolf@googlemail.com"
+    projectWide: true
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: RKE2ControlPlane
+metadata:
+  name: "${CLUSTER_NAME}-control-plane"
+  namespace: "${NAMESPACE}"
+spec:
+  agentConfig: {}
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: WXOneMachineTemplate
+    name: controlplane
+  nodeDrainTimeout: 2m
+  registrationMethod: control-plane-endpoint
+  replicas: ${CONTROL_PLANE_MACHINE_COUNT}
+  rolloutStrategy:
+    rollingUpdate:
+      maxSurge: 1
+    type: RollingUpdate
+  version: ${KUBERNETES_VERSION:="v1.30.2+rke2r1"}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: WXOneMachineTemplate
+metadata:
+  name: controlplane
+  namespace: "${NAMESPACE}"
+spec:
+  template:
+    spec: 
+      flavor:
+        name: "vs1.vs1 monthly"
+      image:
+        name: local
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: worker-md-0
+  namespace: "${NAMESPACE}"
+spec:
+  clusterName: "${CLUSTER_NAME}"
+  replicas: ${WORKER_MACHINE_COUNT}
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: "${CLUSTER_NAME}"
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: RKE2ConfigTemplate
+          name: "${CLUSTER_NAME}-agent"
+          namespace: "${NAMESPACE}"
+      clusterName: "${CLUSTER_NAME}"
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: WXOneMachineTemplate
+        name: worker
+        namespace: "${NAMESPACE}"
+      version: ${KUBERNETES_VERSION:="v1.30.2+rke2r1"}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: WXOneMachineTemplate
+metadata:
+  name: worker
+  namespace: "${NAMESPACE}"
+spec:
+  template:
+    spec:
+      flavor:
+        name: "vs1.vs1 monthly"
+      image:
+        name: local
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: RKE2ConfigTemplate
+metadata:
+  name: "${CLUSTER_NAME}-agent"
+  namespace: "${NAMESPACE}"
+spec:
+  template:
+    spec:
+      agentConfig: {}
