@@ -18,24 +18,45 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+const (
+	// MachineFinalizer allows ReconcileDOCluster to clean up WX-ONE resources associated with WXOneMachine before
+	// removing it from the apiserver.
+	MachineFinalizer = "wxonemachine.infrastructure.cluster.x-k8s.io"
+)
 
 // WXOneMachineSpec defines the desired state of WXOneMachine.
 type WXOneMachineSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of WXOneMachine. Edit wxonemachine_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Flavor WXOneFlavor `json:"flavor,omitempty"`
+	Image  WXOneImage  `json:"image,omitempty"`
+
+	// ProviderID is the unique identifier as specified by the cloud provider.
+	// +optional
+	ProviderID *string `json:"providerID,omitempty"`
 }
 
 // WXOneMachineStatus defines the observed state of WXOneMachine.
 type WXOneMachineStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	// +kubebuilder:default=false
+	Ready bool `json:"ready"`
+	// addresses contains the associated addresses for the machine.
+	// +optional
+	Addresses []clusterv1.MachineAddress `json:"addresses,omitempty"`
+	Flavor    WXOneResourceReference     `json:"flavor,omitempty"`
+	Image     WXOneResourceReference     `json:"image,omitempty"`
+	Instance  WXOneResourceReference     `json:"instance,omitempty"`
+	// +optional
+	FloatingIPAttachement WXOneResourceReference `json:"floatingIPAttachement"`
 }
 
 // +kubebuilder:object:root=true

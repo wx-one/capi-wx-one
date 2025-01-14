@@ -18,6 +18,7 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -28,8 +29,7 @@ type WXOneMachineTemplateSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of WXOneMachineTemplate. Edit wxonemachinetemplate_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Template WXOneMachineTemplateResource `json:"template"`
 }
 
 // WXOneMachineTemplateStatus defines the observed state of WXOneMachineTemplate.
@@ -59,6 +59,16 @@ type WXOneMachineTemplateList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []WXOneMachineTemplate `json:"items"`
+}
+
+// WXOneMachineTemplateResource describes the data needed to create a DockerMachine from a template.
+type WXOneMachineTemplateResource struct {
+	// Standard object's metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+	// +optional
+	ObjectMeta clusterv1.ObjectMeta `json:"metadata,omitempty"`
+	// Spec is the specification of the desired behavior of the machine.
+	Spec WXOneMachineSpec `json:"spec"`
 }
 
 func init() {

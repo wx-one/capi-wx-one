@@ -39,13 +39,116 @@ spec:
           spec:
             description: WXOneClusterSpec defines the desired state of WXOneCluster.
             properties:
-              foo:
-                description: Foo is an example field of WXOneCluster. Edit wxonecluster_types.go
-                  to remove/update
+              availabilityZone:
                 type: string
+              controlPlaneEndpoint:
+                description: APIEndpoint represents a reachable Kubernetes API endpoint.
+                properties:
+                  host:
+                    description: The hostname on which the API server is serving.
+                    type: string
+                  port:
+                    description: The port on which the API server is serving.
+                    format: int32
+                    type: integer
+                required:
+                - host
+                - port
+                type: object
+              network:
+                properties:
+                  name:
+                    type: string
+                  subnets:
+                    items:
+                      properties:
+                        cidr:
+                          type: string
+                        ipversion:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                      - cidr
+                      - ipversion
+                      - name
+                      type: object
+                    type: array
+                required:
+                - name
+                - subnets
+                type: object
+              project:
+                properties:
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
+              sshKey:
+                properties:
+                  name:
+                    type: string
+                  projectWide:
+                    type: boolean
+                  publicKey:
+                    type: string
+                required:
+                - name
+                - projectWide
+                - publicKey
+                type: object
             type: object
           status:
             description: WXOneClusterStatus defines the observed state of WXOneCluster.
+            properties:
+              floatingIP:
+                properties:
+                  ip:
+                    type: string
+                  resourceId:
+                    type: string
+                type: object
+              network:
+                properties:
+                  resourceId:
+                    type: string
+                  subnetReference:
+                    properties:
+                      resourceId:
+                        description: ID of WX-ONE resource
+                        type: string
+                      resourceStatus:
+                        description: Status of WX-ONE resource
+                        type: string
+                    type: object
+                type: object
+              project:
+                properties:
+                  resourceId:
+                    description: ID of WX-ONE resource
+                    type: string
+                  resourceStatus:
+                    description: Status of WX-ONE resource
+                    type: string
+                type: object
+              ready:
+                default: false
+                description: |-
+                  INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+                  Important: Run "make" to regenerate code after modifying this file
+                type: boolean
+              sshKey:
+                properties:
+                  resourceId:
+                    description: ID of WX-ONE resource
+                    type: string
+                  resourceStatus:
+                    description: Status of WX-ONE resource
+                    type: string
+                type: object
+            required:
+            - ready
             type: object
         type: object
     served: true

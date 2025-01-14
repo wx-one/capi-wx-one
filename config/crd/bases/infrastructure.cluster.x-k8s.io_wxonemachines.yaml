@@ -39,13 +39,90 @@ spec:
           spec:
             description: WXOneMachineSpec defines the desired state of WXOneMachine.
             properties:
-              foo:
-                description: Foo is an example field of WXOneMachine. Edit wxonemachine_types.go
-                  to remove/update
+              flavor:
+                properties:
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
+              image:
+                properties:
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
+              providerID:
+                description: ProviderID is the unique identifier as specified by the
+                  cloud provider.
                 type: string
             type: object
           status:
             description: WXOneMachineStatus defines the observed state of WXOneMachine.
+            properties:
+              addresses:
+                description: addresses contains the associated addresses for the machine.
+                items:
+                  description: MachineAddress contains information for the node's
+                    address.
+                  properties:
+                    address:
+                      description: The machine address.
+                      type: string
+                    type:
+                      description: Machine address type, one of Hostname, ExternalIP,
+                        InternalIP, ExternalDNS or InternalDNS.
+                      type: string
+                  required:
+                  - address
+                  - type
+                  type: object
+                type: array
+              flavor:
+                properties:
+                  resourceId:
+                    description: ID of WX-ONE resource
+                    type: string
+                  resourceStatus:
+                    description: Status of WX-ONE resource
+                    type: string
+                type: object
+              floatingIPAttachement:
+                properties:
+                  resourceId:
+                    description: ID of WX-ONE resource
+                    type: string
+                  resourceStatus:
+                    description: Status of WX-ONE resource
+                    type: string
+                type: object
+              image:
+                properties:
+                  resourceId:
+                    description: ID of WX-ONE resource
+                    type: string
+                  resourceStatus:
+                    description: Status of WX-ONE resource
+                    type: string
+                type: object
+              instance:
+                properties:
+                  resourceId:
+                    description: ID of WX-ONE resource
+                    type: string
+                  resourceStatus:
+                    description: Status of WX-ONE resource
+                    type: string
+                type: object
+              ready:
+                default: false
+                description: |-
+                  INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+                  Important: Run "make" to regenerate code after modifying this file
+                type: boolean
+            required:
+            - ready
             type: object
         type: object
     served: true
