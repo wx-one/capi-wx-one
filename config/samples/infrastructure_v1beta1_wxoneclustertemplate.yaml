@@ -6,4 +6,19 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: wxoneclustertemplate-sample
 spec:
-  # TODO(user): Add fields here
+  template:
+    spec: 
+      project: 
+        name: default
+      availabilityZone: wx_dus_1
+      network: 
+        name: wxoneclustertemplate-sample  
+        subnets: 
+        - name: wxoneclustertemplate-sample-subnet
+          ipversion: IPv4
+          cidr: 10.0.0.0/24
+      sshKey: 
+        name: wxoneclustertemplate-sample
+        publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDCfVixvEmrQlN5mCQTDUupJeZSKl8TeDOl1Bi5QMx2fxX0UmxfC2hY9bXnUzJtSw8GECyzFApbmQPeY/K2O/+tZv6fKs6/wzQ0gxiQnj2dYnjDlwNx9dxEwsUt8bpyCHkGdP7Mptll43nfl8Ct7r/I3qErB20mCNgJbp7kXGEJIgcn/M+hPrNQXh8AsFxkieCb9Mdnsn/ZnffcHeExnproUGX5Z46sWfrfq9mnOiOEYITknQuzReHDptF+jzu70LFlU30J/WutDQEKjeEVDMk/i4Dr0MMIRTPsYzOibPLhQowT+1+dllfPeukEZBJAkyB9YNG4U2Q+Cf/cGPTL7EH+pZtTibsucP8iAFeE5SkDO75C9JRVJjf6RgqffLXwUIA+pygVZbV3uaWF9VXuB8vGJqtlpZyLlPoRofBcHCRWEHLRd1rqVDbC+nNZD/wlDEHUCvyHNL8E9YmZRxDO93byIPjx0gCUmNme3lXDf+urKJiyyPBAfIRlyerTJ07duMOmOP5UiRsHcziCTp+SslTovKTD6ICeniD6K9U5qGWv2oV8WiKXNzw9oziaN6iyBm0X8tsqecV5hlgdrf0ZHvroWRHzyDoK3vwz6UFR8DqkSC/WxqitQSV7yGVyGSt6IyslPORZ/+0DI3dFdbAzOma6zYTSZIqiuf+/CqEefMv87Q== bc.christianwolf@googlemail.com"
+        projectWide: true
+

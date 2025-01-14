@@ -6,4 +6,7 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: wxonemachine-sample
 spec:
-  # TODO(user): Add fields here
+  flavor:
+    name: "vs1.vs1 monthly"
+  image:
+    name: local
