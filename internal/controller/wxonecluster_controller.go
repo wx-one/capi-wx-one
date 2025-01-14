@@ -21,11 +21,15 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/cluster-api/util/patch"
+	"sigs.k8s.io/cluster-api/util/predicates"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/go-logr/logr"
@@ -293,9 +297,19 @@ func (r *WXOneClusterReconciler) reconcileDelete(wxoneCluster *infrav1.WXOneClus
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *WXOneClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *WXOneClusterReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
+	predicateLog := ctrl.LoggerFrom(ctx).WithValues("controller", "wxonecluster")
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&infrav1.WXOneCluster{}).
+		Watches(
+			&clusterv1.Cluster{},
+			handler.EnqueueRequestsFromMapFunc(util.ClusterToInfrastructureMapFunc(ctx, infrav1.GroupVersion.WithKind("WXOneCluster"), mgr.GetClient(), &infrav1.WXOneCluster{})),
+			builder.WithPredicates(predicates.All(mgr.GetScheme(), predicateLog,
+				predicates.ResourceIsChanged(mgr.GetScheme(), predicateLog),
+				predicates.ClusterPausedTransitions(mgr.GetScheme(), predicateLog),
+			)),
+		).
 		Named("wxonecluster").
 		Complete(r)
 }

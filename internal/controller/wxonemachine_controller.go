@@ -31,9 +31,12 @@ import (
 	"sigs.k8s.io/cluster-api/controllers/clustercache"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/cluster-api/util/patch"
+	"sigs.k8s.io/cluster-api/util/predicates"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	infrav1 "github.com/wx-one/cluster-api-provider-wxone/api/v1beta1"
@@ -172,7 +175,7 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 
 	if machine.Spec.Bootstrap.DataSecretName == nil {
 		log.Info("Bootstrap data secret reference is not yet available")
-		return ctrl.Result{}, nil
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 
 	if wxOneMachine.Status.Flavor.ResourceID == "" {
@@ -372,10 +375,67 @@ func (r *WXOneMachineReconciler) reconcileDelete(ctx context.Context, cluster *c
 	}
 }
 
+// WXOneClusterToWxOneMachines is a handler.ToRequestsFunc to be used to enqueue
+// requests for reconciliation of WXOneMachines.
+func (r *WXOneMachineReconciler) WXOneClusterToWXOneMachines(ctx context.Context, o client.Object) []ctrl.Request {
+	result := []ctrl.Request{}
+	c, ok := o.(*infrav1.WXOneCluster)
+	if !ok {
+		panic(fmt.Sprintf("Expected a WxOneCluster but got a %T", o))
+	}
+
+	cluster, err := util.GetOwnerCluster(ctx, r.Client, c.ObjectMeta)
+	switch {
+	case apierrors.IsNotFound(err) || cluster == nil:
+		return result
+	case err != nil:
+		return result
+	}
+
+	labels := map[string]string{clusterv1.ClusterNameLabel: cluster.Name}
+	machineList := &clusterv1.MachineList{}
+	if err := r.Client.List(ctx, machineList, client.InNamespace(c.Namespace), client.MatchingLabels(labels)); err != nil {
+		return nil
+	}
+	for _, m := range machineList.Items {
+		if m.Spec.InfrastructureRef.Name == "" {
+			continue
+		}
+		name := client.ObjectKey{Namespace: m.Namespace, Name: m.Name}
+		result = append(result, ctrl.Request{NamespacedName: name})
+	}
+
+	return result
+}
+
 // SetupWithManager sets up the controller with the Manager.
-func (r *WXOneMachineReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *WXOneMachineReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
+	predicateLog := ctrl.LoggerFrom(ctx).WithValues("controller", "dockermachine")
+	clusterToWxOneMachines, err := util.ClusterToTypedObjectsMapper(mgr.GetClient(), &infrav1.WXOneMachineList{}, mgr.GetScheme())
+	if err != nil {
+		return err
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&infrav1.WXOneMachine{}).
+		Watches(
+			&clusterv1.Machine{},
+			handler.EnqueueRequestsFromMapFunc(util.MachineToInfrastructureMapFunc(infrav1.GroupVersion.WithKind("DockerMachine"))),
+			builder.WithPredicates(predicates.ResourceIsChanged(mgr.GetScheme(), predicateLog)),
+		).
+		Watches(
+			&infrav1.WXOneCluster{},
+			handler.EnqueueRequestsFromMapFunc(r.WXOneClusterToWXOneMachines),
+			builder.WithPredicates(predicates.ResourceIsChanged(mgr.GetScheme(), predicateLog)),
+		).
+		Watches(
+			&clusterv1.Cluster{},
+			handler.EnqueueRequestsFromMapFunc(clusterToWxOneMachines),
+			builder.WithPredicates(predicates.All(mgr.GetScheme(), predicateLog,
+				predicates.ResourceIsChanged(mgr.GetScheme(), predicateLog),
+				predicates.ClusterPausedTransitionsOrInfrastructureReady(mgr.GetScheme(), predicateLog),
+			)),
+		).
 		Named("wxonemachine").
 		Complete(r)
 }
