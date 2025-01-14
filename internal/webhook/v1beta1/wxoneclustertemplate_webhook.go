@@ -19,6 +19,7 @@ package v1beta1
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -107,7 +108,19 @@ func (v *WXOneClusterTemplateCustomValidator) ValidateUpdate(ctx context.Context
 	}
 	wxoneclustertemplatelog.Info("Validation for WXOneClusterTemplate upon update", "name", wxoneclustertemplate.GetName())
 
-	// TODO(user): fill in your validation logic upon object update.
+	oldClusterTemplate, ok := oldObj.(*infrastructurev1beta1.WXOneClusterTemplate)
+	if !ok {
+		return nil, fmt.Errorf("expected a WXOneClusterTemplate object for the oldObj but got %T", newObj)
+	}
+
+	newClusterTemplateCopy := wxoneclustertemplate.DeepCopy()
+	oldClusterTemplateCopy := oldClusterTemplate.DeepCopy()
+
+	newClusterTemplateCopy.Spec.Template.Spec.ControlPlaneEndpoint = oldClusterTemplateCopy.Spec.Template.Spec.ControlPlaneEndpoint
+
+	if !reflect.DeepEqual(newClusterTemplateCopy.Spec, oldClusterTemplateCopy.Spec) {
+		return nil, fmt.Errorf("modifications to spec are not allowed")
+	}
 
 	return nil, nil
 }

@@ -82,6 +82,14 @@ type WXOneMachineList struct {
 	Items           []WXOneMachine `json:"items"`
 }
 
+type WXOneFlavor struct {
+	Name string `json:"name"`
+}
+
+type WXOneImage struct {
+	Name string `json:"name"`
+}
+
 func init() {
 	SchemeBuilder.Register(&WXOneMachine{}, &WXOneMachineList{})
 }

@@ -19,6 +19,7 @@ package v1beta1
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -107,7 +108,19 @@ func (v *WXOneMachineTemplateCustomValidator) ValidateUpdate(ctx context.Context
 	}
 	wxonemachinetemplatelog.Info("Validation for WXOneMachineTemplate upon update", "name", wxonemachinetemplate.GetName())
 
-	// TODO(user): fill in your validation logic upon object update.
+	oldMachineTemplate, ok := oldObj.(*infrastructurev1beta1.WXOneMachineTemplate)
+	if !ok {
+		return nil, fmt.Errorf("expected a WXOneMachine object for the oldObj but got %T", newObj)
+	}
+
+	newMachineTemplateCopy := wxonemachinetemplate.DeepCopy()
+	oldMachineTemplateCopy := oldMachineTemplate.DeepCopy()
+
+	newMachineTemplateCopy.Spec.Template.Spec.ProviderID = oldMachineTemplateCopy.Spec.Template.Spec.ProviderID
+
+	if !reflect.DeepEqual(newMachineTemplateCopy.Spec, oldMachineTemplateCopy.Spec) {
+		return nil, fmt.Errorf("modifications to spec are not allowed")
+	}
 
 	return nil, nil
 }

@@ -35,7 +35,9 @@ type WXOneClusterSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Project          WXOneProject `json:"project,omitempty"`
+	Project WXOneProject `json:"project,omitempty"`
+
+	// +kubebuilder:validation:Enum=wx_dus_1
 	AvailabilityZone string       `json:"availabilityZone,omitempty"`
 	Network          WXOneNetwork `json:"network,omitempty"`
 	SSHKey           WXOneSSHKey  `json:"sshKey,omitempty"`
@@ -113,9 +115,12 @@ type WXOneNetwork struct {
 }
 
 type WXOneSubnet struct {
-	Name      string `json:"name"`
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Enum=IPv4
 	IPVersion string `json:"ipversion"`
-	CIDR      string `json:"cidr"`
+	// +kubebuilder:validation:Pattern=`^(([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2})$`
+	CIDR string `json:"cidr"`
 }
 
 type WXOneNetworkResource struct {
@@ -136,14 +141,6 @@ type WXOneSSHKey struct {
 	Name        string `json:"name"`
 	PublicKey   string `json:"publicKey"`
 	ProjectWide bool   `json:"projectWide"`
-}
-
-type WXOneFlavor struct {
-	Name string `json:"name"`
-}
-
-type WXOneImage struct {
-	Name string `json:"name"`
 }
 
 func init() {

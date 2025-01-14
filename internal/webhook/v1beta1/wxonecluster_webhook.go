@@ -19,6 +19,7 @@ package v1beta1
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -94,6 +95,10 @@ func (v *WXOneClusterCustomValidator) ValidateCreate(ctx context.Context, obj ru
 	}
 	wxoneclusterlog.Info("Validation for WXOneCluster upon creation", "name", wxonecluster.GetName())
 
+	if wxonecluster.Spec.Project.Name != "default" {
+		return nil, fmt.Errorf("currently only the project 'default' is supported, you specified %s", wxonecluster.Spec.Project.Name)
+	}
+
 	// TODO(user): fill in your validation logic upon object creation.
 
 	return nil, nil
@@ -107,7 +112,19 @@ func (v *WXOneClusterCustomValidator) ValidateUpdate(ctx context.Context, oldObj
 	}
 	wxoneclusterlog.Info("Validation for WXOneCluster upon update", "name", wxonecluster.GetName())
 
-	// TODO(user): fill in your validation logic upon object update.
+	oldCluster, ok := oldObj.(*infrastructurev1beta1.WXOneCluster)
+	if !ok {
+		return nil, fmt.Errorf("expected a WXOneCluster object for the oldObj but got %T", newObj)
+	}
+
+	newClusterCopy := wxonecluster.DeepCopy()
+	oldClusterCopy := oldCluster.DeepCopy()
+
+	newClusterCopy.Spec.ControlPlaneEndpoint = oldClusterCopy.Spec.ControlPlaneEndpoint
+
+	if !reflect.DeepEqual(newClusterCopy.Spec, oldClusterCopy.Spec) {
+		return nil, fmt.Errorf("modifications to spec are not allowed")
+	}
 
 	return nil, nil
 }

@@ -40,6 +40,8 @@ spec:
             description: WXOneClusterSpec defines the desired state of WXOneCluster.
             properties:
               availabilityZone:
+                enum:
+                - wx_dus_1
                 type: string
               controlPlaneEndpoint:
                 description: APIEndpoint represents a reachable Kubernetes API endpoint.
@@ -63,8 +65,11 @@ spec:
                     items:
                       properties:
                         cidr:
+                          pattern: ^(([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2})$
                           type: string
                         ipversion:
+                          enum:
+                          - IPv4
                           type: string
                         name:
                           type: string
