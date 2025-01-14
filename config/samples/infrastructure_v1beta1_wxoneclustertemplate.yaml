@@ -2,7 +2,7 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: WXOneClusterTemplate
 metadata:
   labels:
-    app.kubernetes.io/name: cluster-api-provider-wxone-2
+    app.kubernetes.io/name: cluster-api-provider-wxone
     app.kubernetes.io/managed-by: kustomize
   name: wxoneclustertemplate-sample
 spec:

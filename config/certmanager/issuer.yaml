@@ -5,7 +5,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   labels:
-    app.kubernetes.io/name: cluster-api-provider-wxone-2
+    app.kubernetes.io/name: cluster-api-provider-wxone
     app.kubernetes.io/managed-by: kustomize
   name: selfsigned-issuer
   namespace: system
