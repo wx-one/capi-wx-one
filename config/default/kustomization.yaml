@@ -8,11 +8,10 @@ namespace: cluster-api-provider-wxone-system
 # field above.
 namePrefix: cluster-api-provider-wxone-
 
-# Labels to add to all resources and selectors.
-#labels:
-#- includeSelectors: true
-#  pairs:
-#    someName: someValue
+labels:
+- includeSelectors: true
+  pairs:
+    cluster.x-k8s.io/provider:  "infrastructure-wxone"
 
 resources:
 - ../crd
