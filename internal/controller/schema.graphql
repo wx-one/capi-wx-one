@@ -1,0 +1,2205 @@
+"JSON String"
+scalar JSON
+
+"Version 4 UUID"
+scalar UUID
+
+"E-Mail Address"
+scalar Email
+
+"Pagination Info"
+type PaginationInfo {
+  nextCursor: String
+  prevCursor: String
+  hasNext: Boolean!
+  hasPrev: Boolean!
+  totalCount: Int
+}
+
+"Pagination Input"
+input PaginationInput {
+  cursor: String
+  direction: String
+  pageSize: Int
+}
+
+"Software Categories"
+enum SoftwareCategory {
+  "all"
+  all
+  "messaging"
+  messaging
+}
+
+"Status of software"
+enum SoftwareStatus {
+  "Software is active"
+  ACTIVE
+  "Software is in delivery"
+  DELIVERY
+  "Request is beeing reviewed"
+  REVIEW
+}
+
+"Project"
+type Project {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String
+}
+
+"ProjectResponse"
+type ProjectResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: Project
+}
+
+"ProjectListResponse"
+type ProjectListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [Project]
+}
+
+"Availability Zone"
+enum AvailabilityZone {
+  "Internal zone for customer workloads"
+  wx_dus_1
+  "Internal zone for customer workloads"
+  wx_dus_2
+  "Internal zone for customer workloads"
+  wx_dus_3
+  "Public zone"
+  wx_dus
+  "Unknown zone"
+  UNKNOWN
+}
+
+"Subnet"
+type Subnet {
+  "ID"
+  id: String!
+  "Name"
+  name: String!
+  "CIDR"
+  cidr: String!
+  "IP Version"
+  ipVersion: String
+}
+
+"Subnet Input"
+input SubnetInput {
+  "Name"
+  name: String!
+  "IP Version"
+  ipVersion: String!
+  "CIDR"
+  cidr: String
+}
+
+"Network"
+type W1Network {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String!
+  "Availability Zone"
+  availabilityZone: AvailabilityZone
+  "Project"
+  project: Project
+  "Subnets"
+  subnets: [Subnet]!
+}
+
+"Network Response"
+type W1NetworkResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1Network
+}
+
+"Network List Response"
+type W1NetworkListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [W1Network]
+  "Pagination Info"
+  pagination: PaginationInfo
+}
+
+"User"
+type User {
+  "ID"
+  id: UUID!
+  "Name"
+  username: Email!
+  "Role"
+  role: Int
+  "Organization Role"
+  organizationRole: Int
+  "Project Role"
+  projectRole: Int
+}
+
+"User List Response"
+type UserListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [User]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+"Image Type"
+enum W1ImageType {
+  "Default"
+  default
+  "Custom"
+  custom
+}
+
+"Image"
+type W1Image {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String
+  "Type (Custom / Default)"
+  type: W1ImageType
+  "Source (Default Image only)"
+  source: String
+  "Username (Default Image only)"
+  username: String
+  "Operating System (Custom Image only)"
+  os: String
+  "Storage ID (Custom Image only)"
+  storageId: UUID
+  "Filename (Custom Image only)"
+  filename: String
+}
+
+"Image Response"
+type W1ImageResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1Image
+}
+
+"Image List Response"
+type W1ImageListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [W1Image]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+"Response"
+type Response {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: String
+}
+
+"Flavor Type"
+enum FlavorType {
+  "TBD"
+  vs1
+  "TBD"
+  dd1
+  "TBD"
+  ha1
+  "Unknown flavor type"
+  UNKNOWN
+}
+
+"Flavor"
+type Flavor {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String!
+  "The flavor type"
+  type: String!
+  "Description of Flavor"
+  description: String
+  "Is this flavor disabled?"
+  disabled: Boolean
+  "Does this flavor use ephemeral storage?"
+  ephemeral: Int
+  "Properties of the flavor"
+  properties: JSON
+  "RAM in Bytes"
+  ram: Int
+  "TBD"
+  disk: Int
+  "TBD"
+  isPublic: Boolean
+  "TBD"
+  rxtxFactor: Float
+  "TBD"
+  swap: String
+  "Number of VCPUs"
+  vcpus: Int
+}
+
+"Flavor Response"
+type FlavorResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: Flavor
+}
+
+"Flavor List Response"
+type FlavorListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [Flavor]
+}
+
+"Quota Type"
+enum QuotaType {
+  "Instance"
+  instance
+  "Volume"
+  volume
+  "Floating IP"
+  floating_ip
+  "Network"
+  network
+  "Custom Image"
+  custom_image
+}
+
+"Quota"
+type Quota {
+  "ID"
+  id: UUID!
+  "ID of project"
+  projectId: String!
+  "Type of quota"
+  type: QuotaType!
+  "Name of quota"
+  name: String!
+  "Count for quota"
+  count: Int!
+  "Availability Zone"
+  availabilityZone: AvailabilityZone
+  "Flavor ID"
+  flavorId: UUID
+  "volumeType"
+  volumeType: W1VolumeType
+}
+
+"Quota Input"
+input QuotaInput {
+  "Type of quota"
+  type: QuotaType!
+  "Name of quota"
+  name: String!
+  "Count for quota"
+  count: Int!
+  "Availability Zone"
+  availabilityZone: AvailabilityZone
+  "Flavor ID"
+  flavorId: UUID
+  "volumeType"
+  volumeType: W1VolumeType
+}
+
+"Quotas Check Response"
+type QuotasCheckResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [String]
+}
+
+"Quota List Response"
+type QuotaListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [Quota]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+"Quota Response"
+type QuotaResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: Quota
+}
+
+"Volume Type"
+enum W1VolumeType {
+  "SSD"
+  ssd
+  "NVMe SSD"
+  nvme_ssd
+  "Super Disk"
+  super_disk
+}
+
+"Billing Resource"
+type BillingResource {
+  "ID"
+  resourceId: UUID
+  "Type"
+  resourceType: String
+  "Created At"
+  createdAt: String
+  "Deleted At"
+  deletedAt: String
+}
+
+"SoftwareMode"
+type SoftwareMode {
+  "ID"
+  id: UUID
+  "Name"
+  name: String
+  "Description"
+  description: String
+  "html template"
+  htmlTemplate: String
+  "Parameters of this mode"
+  params: JSON
+  "Pricing details of this mode"
+  pricing: JSON
+  "is configurable"
+  isConfigurable: Boolean
+  "config html template"
+  configHtmlTemplate: String
+  "config js template"
+  configJsTemplate: String
+}
+
+"Software"
+type Software {
+  "ID"
+  id: UUID
+  "Name"
+  name: String
+  "Description"
+  description: String
+  "The image id for referencing the logo in the frontend"
+  imageId: String
+  "Software modes"
+  modes: [SoftwareMode]
+}
+
+"Installed Software"
+type InstalledSoftware {
+  "ID"
+  id: UUID
+  "Project"
+  projectId: UUID
+  "Name"
+  name: String
+  "Description"
+  description: String
+  "Status"
+  status: SoftwareStatus
+  "Software"
+  software: Software
+  "Mode"
+  mode: SoftwareMode
+  "Chosen params of the installed software"
+  params: JSON
+  "Amount EU per month for the current configuration"
+  amountEu: Float
+}
+
+"Software Response"
+type SoftwareResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: Software
+}
+
+"Software List Response"
+type SoftwareListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [Software]
+}
+
+"SoftwareMode Response"
+type SoftwareModeResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: SoftwareMode
+}
+
+"InstalledSoftware Response"
+type InstalledSoftwareResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: InstalledSoftware
+}
+
+"InstalledSoftware List Response"
+type InstalledSoftwareListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [InstalledSoftware]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+"Software Configuration Response"
+type SoftwareConfigurationResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: JSON
+}
+
+"Revolut Order State"
+enum RevolutOrderState {
+  "PENDING"
+  PENDING
+  "PROCESSING"
+  PROCESSING
+  "AUTHORISED"
+  AUTHORISED
+  "COMPLETED"
+  COMPLETED
+  "CANCELLED"
+  CANCELLED
+  "FAILED"
+  FAILED
+}
+
+"Revolut Order Type"
+enum RevolutOrderType {
+  "PAYMENT"
+  PAYMENT
+  "REFUND"
+  REFUND
+  "CHARGEBACK"
+  CHARGEBACK
+}
+
+"Revolut Order"
+type RevolutOrder {
+  "ID"
+  id: String
+  "Reference Number"
+  referenceNumber: String
+  "Type"
+  type: RevolutOrderType
+  "Token"
+  token: String
+  "Description"
+  description: String
+  "State"
+  state: RevolutOrderState
+  "Amount"
+  amount: Float
+  "Currency"
+  currency: String
+  "Created At"
+  createdAt: String
+}
+
+"Revolut Order Response"
+type RevolutOrderResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: RevolutOrder
+}
+
+"Revolut Order List Response"
+type RevolutOrderListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [RevolutOrder]
+}
+
+"Revolut Card"
+type RevolutCard {
+  "ID"
+  id: String
+  "last 4 digits"
+  last4: String
+  "expiry month"
+  expiryMonth: Int
+  "expiry year"
+  expiryYear: Int
+  "Cardholder name"
+  cardholderName: String
+  "Brand"
+  brand: String
+}
+
+"Revolut Card Response"
+type RevolutCardResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: RevolutCard
+}
+
+"Revolut Customer"
+type RevolutCustomer {
+  "Revolut ID"
+  id: String!
+  "E-Mail"
+  email: String
+  "WX-ONE User ID"
+  userId: UUID
+}
+
+"Revolut Customer List Response"
+type RevolutCustomerListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [RevolutCustomer]
+}
+
+"Api Key"
+type ApiKey {
+  "ID"
+  id: UUID!
+  "Username"
+  username: String!
+  "Description"
+  description: String
+  "Password"
+  password: String
+  "Created At"
+  createdAt: String
+  "Expire At"
+  expireAt: String
+}
+
+"Api Key List Response"
+type ApiKeyListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [ApiKey]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+"Api Key Response"
+type ApiKeyResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: ApiKey
+}
+
+"Instance"
+type W1Instance {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String!
+  "Status of Instance"
+  status: InstanceStatus!
+  "Availability Zone"
+  availabilityZone: AvailabilityZone
+  "Additional Properties of Instance"
+  properties: JSON
+  "ID of flavor"
+  flavorId: UUID
+  "Internal IP addresses"
+  addresses: [String]
+  "ProjectId of resource"
+  projectId: JSON
+  "Attached Volumes"
+  volumes: [W1Volume]
+  "Attached FloatingIPs"
+  floatingIPs: [InstanceFloatingIPAttachment]
+}
+
+"Instance Response"
+type W1InstanceResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1Instance
+}
+
+"Instance List Response"
+type W1InstanceListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [W1Instance]
+  "Pagination Info"
+  pagination: PaginationInfo
+}
+
+"Instance Paginated List Response"
+type W1InstancePaginatedListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [W1Instance]
+}
+
+"Instance Volume Attachment"
+type W1InstanceVolumeAttachmentsResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [W1Volume]
+}
+
+"Instance Floating Attachment Response"
+type W1InstanceFloatingIPAttachmentsResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [InstanceFloatingIPAttachment]
+}
+
+"Instance Floating IP Attachment"
+type InstanceFloatingIPAttachment {
+  "ID"
+  id: UUID!
+  "name"
+  ip: String!
+  "Nat to VMs private IP"
+  natToVmsPrivateIp: Boolean
+}
+
+"Volume List Response"
+type W1VolumeListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [W1Volume]
+}
+
+"Volume Attachment Response"
+type W1VolumeAttachmentResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1Instance
+}
+
+"Volume"
+type W1Volume {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String!
+  "Size in GB"
+  size: Int!
+  "Volume Type"
+  volumeType: W1VolumeType!
+  "attachedTo"
+  attachedTo: W1Instance
+}
+
+"Volume Response"
+type W1VolumeResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1Volume
+}
+
+"Status of an instance"
+enum InstanceStatus {
+  "Instance is running"
+  RUNNING
+  "Instance is created"
+  BUILD
+  "Instance is stopped"
+  STOPPED
+  "Instance was deleted"
+  DELETED
+  "Instance has an error state"
+  ERROR
+  "Instance is rebooting"
+  REBOOT
+  "Instance is getting rebuilded"
+  REBUILD
+  "Instance is shut off"
+  SHUTOFF
+  "Instance is suspended"
+  SUSPENDED
+  "Instance status is updating"
+  UPDATING
+  "Instance status is not known"
+  UNKNOWN
+}
+
+"Floating IP"
+type W1FloatingIP {
+  "ID"
+  id: UUID!
+  "Public IP"
+  ip: String!
+  "Attachment"
+  attachedTo: FloatingIPAttachment
+}
+
+"Floating IP Response"
+type FloatingIPResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1FloatingIP
+}
+
+"Floating IP List Response"
+type FloatingIPListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [W1FloatingIP]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+type FloatingIPInstance {
+  "ID"
+  id: UUID!
+  vmId: UUID!
+  "name"
+  name: String!
+  "Priority of vm (will be relevant later)"
+  priority: Int!
+}
+
+"Floating IP Instance Attachment"
+type FloatingIPInstanceAttachment {
+  "Nat to VMs private IP"
+  natToVmsPrivateIp: Boolean
+  vms: [FloatingIPInstance]
+}
+
+"Floating IP Attachment can be either an vm or loadbalancer frontend ip"
+union FloatingIPAttachment =
+    FloatingIPInstanceAttachment
+  | LoadBalancerFrontendIP
+
+"Floating IP Attachment Response"
+type FloatingIPAttachmentResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: FloatingIPAttachment
+}
+
+"Floating Group Vm Input"
+input FloatingGroupVmInput {
+  "Priority of vm (will be relevant later)"
+  priority: Int!
+  "Id of vm"
+  vm: UUID!
+}
+
+"Floating Group"
+type FloatingGroupMember {
+  "ID"
+  id: UUID!
+  "ID of vm"
+  vmId: UUID!
+  "ID of floating ip"
+  floatingIPId: UUID!
+  "priority"
+  priority: Int
+  "Nat to VMs private ip"
+  natToVmsPrivateIp: Boolean
+}
+
+"Floating Group Response"
+type FloatingGroupResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [FloatingGroupMember]
+}
+
+"SSH Key"
+type W1Key {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String!
+  "Private Key"
+  privateKey: String
+  "Public Key"
+  publicKey: String!
+  "Project id when project wide, user id when only valid for user"
+  targetId: String!
+  "Can this key be used for the complete project or only the user"
+  projectWide: Boolean!
+}
+
+"Key List Response"
+type W1KeyListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [W1Key]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+"Key Response"
+type W1KeyResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1Key
+}
+
+"Security Group Rule Direction"
+enum SecurityGroupRuleDirection {
+  "Ingress Traffic"
+  ingress
+  "Egress Traffic"
+  egress
+}
+
+"Ethernet Type"
+enum EtherType {
+  "IP version 4"
+  IPv4
+  "IP version 6"
+  IPv6
+}
+
+"Protocol"
+enum Protocol {
+  "TCP"
+  tcp
+  "UDP"
+  udp
+  "ICMP"
+  icmp
+}
+
+"Health Check Protocol"
+enum HealthCheckProtocol {
+  "HTTP"
+  http
+  "TCP"
+  tcp
+  "UDP"
+  udp
+}
+
+"Security Group"
+type W1SecurityGroup {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String!
+  "Description"
+  description: String
+  "Rules for Security Group"
+  rules: [W1SecurityGroupRule]
+}
+
+"Security Group Rule"
+type W1SecurityGroupRule {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String
+  "Description"
+  description: String
+  "ID of Security Group"
+  securityGroupId: UUID!
+  "Direction (Ingress/Egress)"
+  direction: SecurityGroupRuleDirection!
+  "Ethernet Type"
+  etherType: EtherType!
+  "Priority"
+  priority: Int!
+  "Minimum port in range"
+  portRangeMin: Int!
+  "Maximum port in range"
+  portRangeMax: Int!
+  "Protocol"
+  protocol: Protocol!
+  "Source IP/CIDR"
+  source: String!
+  "Destination IP/CIDR"
+  destination: String!
+}
+
+"Security Group Association"
+type W1SecurityGroupAssociation {
+  "ID"
+  id: UUID!
+  "ID of instance"
+  vmId: UUID!
+  "ID of subnet"
+  subnetId: UUID!
+}
+
+"Security Group Input"
+input W1SecurityGroupRuleInput {
+  "Name"
+  name: String!
+  "Description"
+  description: String!
+  "Direction (Ingress/Egress)"
+  direction: SecurityGroupRuleDirection!
+  "Ethernet Type"
+  etherType: EtherType!
+  "Priority"
+  priority: Int!
+  "Minimum port in range"
+  portRangeMin: Int!
+  "Maximum port in range"
+  portRangeMax: Int!
+  "Protocol"
+  protocol: Protocol!
+  "Source IP/CIDR"
+  source: String!
+  "Destination IP/CIDR"
+  destination: String!
+}
+
+"Security Group Response"
+type W1SecurityGroupResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1SecurityGroup
+}
+
+"Security Group Rule Response"
+type W1SecurityGroupRuleResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1SecurityGroupRule
+}
+
+"Security Group List Response"
+type W1SecurityGroupListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [W1SecurityGroup]
+}
+
+"Security Group Association Response"
+type W1SecurityGroupAssociationResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: W1SecurityGroupAssociation
+}
+
+"Algorithm Type"
+enum AlgorithmType {
+  "Round Robin"
+  ROUND_ROBIN
+  "Least Connections"
+  LEAST_CONNECTIONS
+  "IP Hash"
+  IP_HASH
+}
+
+"Loadbalancer Frontend IP Input"
+input LoadBalancerFrontendIPInput {
+  "Name"
+  name: String!
+  "ID of Floating IP"
+  floatingIPId: UUID
+}
+
+"Loadbalancer Frontend IP"
+type LoadBalancerFrontendIP {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String!
+  "Loadbalancer ID"
+  loadBalancerId: UUID!
+  "Floating IP Id"
+  floatingIPId: UUID
+}
+
+"Loadbalancer Frontend IP Response"
+type LoadBalancerFrontendIPResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: LoadBalancerFrontendIP
+}
+
+"Loadbalancer Health Check Input"
+input LoadBalancerHealthCheckInput {
+  "Protocol"
+  protocol: HealthCheckProtocol!
+  "Port"
+  port: Int!
+  "Path (Protocol http only)"
+  path: String
+}
+
+"Loadbalancer Health Check"
+type LoadBalancerHealthCheck {
+  "ID"
+  id: UUID!
+  "ID of Loadbalancer Backend"
+  loadBalancerBackendId: UUID!
+  "Protocol"
+  protocol: HealthCheckProtocol!
+  "Port"
+  port: Int!
+  "Path (Protocol http only)"
+  path: String
+}
+
+"Loadbalancer Health Check Response"
+type LoadBalancerHealthCheckResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: LoadBalancerHealthCheck
+}
+
+"Loadbalancer Backend Input"
+input LoadBalancerBackendInput {
+  "Name"
+  name: String!
+  "IDs of Instances"
+  vms: [UUID!]
+  "Health Check"
+  healthCheck: LoadBalancerHealthCheckInput
+}
+
+"Loadbalancer Backend"
+type LoadBalancerBackend {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String!
+  "IDs of Instances"
+  vms: [UUID!]
+  "Health Check"
+  healthCheck: LoadBalancerHealthCheck
+}
+
+"Loadbalancer Backend Response"
+type LoadBalancerBackendResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: LoadBalancerBackend
+}
+
+"Loadbalancer Rule Input"
+input LoadBalancerRuleInput {
+  "ID of Frontend IP"
+  frontendIPId: UUID!
+  "ID of Backend"
+  backend: UUID!
+  "Protocol"
+  protocol: Protocol!
+  "Frontend Port"
+  frontendPort: Int!
+  "Backend Port"
+  backendPort: Int!
+  "Algorithm Type"
+  algorithm: AlgorithmType!
+}
+
+"Loadbalancer Rule"
+type LoadBalancerRule {
+  "ID"
+  id: UUID!
+  "ID of Frontend IP"
+  frontendIPId: UUID!
+  "ID of Backend"
+  backend: UUID!
+  "Protocol"
+  protocol: Protocol!
+  "Frontend Port"
+  frontendPort: Int!
+  "Backend Port"
+  backendPort: Int!
+  "Algorithm Type"
+  algorithm: AlgorithmType!
+}
+
+"Loadbalancer Rule Response"
+type LoadBalancerRuleResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: LoadBalancerRule
+}
+
+"Loadbalancer"
+type LoadBalancer {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String!
+  "Description"
+  description: String
+  "ID of project"
+  projectId: UUID!
+  "Frontend IPs"
+  frontendIPs: [LoadBalancerFrontendIP!]
+  "Backends"
+  backends: [LoadBalancerBackend!]
+  "Rules"
+  rules: [LoadBalancerRule!]
+}
+
+"Loadbalancer Response"
+type LoadBalancerResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: LoadBalancer
+}
+
+"File"
+type File {
+  "ID"
+  id: UUID!
+  "Name"
+  name: String
+}
+
+"File Response"
+type FileResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: File
+}
+
+"Operating System"
+type OperatingSystem {
+  "Name"
+  name: String
+}
+
+"Operating System List Response"
+type OperatingSystemListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [OperatingSystem]
+}
+
+"Billing Item"
+type BillingItem {
+  "ID"
+  id: UUID
+  "Start date"
+  startDate: String
+  "End date"
+  endDate: String
+  "Resource"
+  resource: BillingResource
+  "Amount in Euro"
+  amountEu: Float
+}
+
+"Bill"
+type Bill {
+  "ID"
+  id: UUID
+  "Start date"
+  startDate: String
+  "End date"
+  endDate: String
+  "Billing number"
+  billingNumber: String
+  "Amount in Euro"
+  amountEu: Float
+  "Billing Items"
+  items: [BillingItem]
+  "Is bill payed"
+  payed: Boolean
+}
+
+"Bill List Response"
+type BillListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [Bill]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+"Profile"
+type Profile {
+  "Newsletter OptIn"
+  newsletterOptIn: Boolean
+}
+
+"Profile Response"
+type ProfileResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: Profile
+}
+
+"Organization Change Request"
+type OrganizationChangeRequest {
+  "Bank Owner Name"
+  bankOwnerName: String
+  "IBAN"
+  iban: String
+  "BIC"
+  bic: String
+  "Bank Name"
+  bankName: String
+  "Bank Account Number"
+  bankAccountNumber: String
+  "IFSC Code"
+  ifscCode: String
+  "SWIFT Code"
+  swiftCode: String
+  "Commercial Register Number"
+  commercialRegisterNumber: String
+  "Register Court"
+  registerCourt: String
+  "VAT Number"
+  vatNumber: String
+}
+
+"Organization"
+type Organization {
+  "Name"
+  name: String
+  "Address line 1"
+  addressLine1: String
+  "Address line 2"
+  addressLine2: String
+  "City"
+  city: String
+  "State / Province / Region"
+  stateProvinceRegion: String
+  "Zip Code"
+  zipCode: String
+  "Country"
+  country: String
+  "VAT Number"
+  vatNumber: String
+  "Commercial Register Number"
+  commercialRegisterNumber: String
+  "Register Court"
+  registerCourt: String
+  "GSTIN"
+  gstin: String
+  "CIN"
+  cin: String
+  "Bank Owner Name"
+  bankOwnerName: String
+  "IBAN"
+  iban: String
+  "BIC"
+  bic: String
+  "Bank Name"
+  bankName: String
+  "Bank Account Number"
+  bankAccountNumber: String
+  "IFSC Code"
+  ifscCode: String
+  "Swift Code"
+  swiftCode: String
+  "Aggree to sepa"
+  agreeSEPA: Boolean
+  "Existing Change Request"
+  changeRequest: OrganizationChangeRequest
+}
+
+"Organization Response"
+type OrganizationResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: Organization
+}
+
+"Project Access"
+type ProjectAccess {
+  "Role"
+  role: Int
+}
+
+"Project Access Response"
+type ProjectAccessResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: ProjectAccess
+}
+
+"Organization Access"
+type OrganizationAccess {
+  "Role"
+  role: Int
+}
+
+"Organization Access Response"
+type OrganizationAccessResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: OrganizationAccess
+}
+
+"Pricing List Response"
+type PricingListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: JSON
+}
+
+type Query {
+  "Get information about me"
+  me: User
+  "Get information about my project access to the current proejct"
+  getProjectAccess("ID of Project" projectId: UUID!): ProjectAccessResponse
+  "Get information about my organization access to my organization"
+  getOrganizationAccess: OrganizationAccessResponse
+  "Get profile information"
+  getProfile: ProfileResponse
+  "Get organization information"
+  getOrganization: OrganizationResponse
+  "Get Flavor List"
+  getFlavorList: FlavorListResponse
+  "Get Flavor By Name"
+  getFlavorByName("Name" name: String!): FlavorResponse
+  "Get Instance List"
+  getInstanceList(
+    "ID of Project"
+    projectId: UUID!
+    pagination: PaginationInput
+  ): W1InstanceListResponse
+  "Get Instance"
+  getInstance(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1InstanceResponse
+  "Get Network List"
+  getNetworkList(
+    "ID of Zone"
+    zoneId: UUID
+    "ID of Project"
+    projectId: UUID!
+    "Pagination"
+    pagination: PaginationInput
+  ): W1NetworkListResponse
+  "Get Network"
+  getNetwork(
+    "ID of Network"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1NetworkResponse
+  # getSecurityGroupList(page: Int, limit: Int): SecurityGroupListResponse
+  "Get Volume List"
+  getVolumeList(
+    "ID of Project"
+    projectId: UUID!
+    "If true or false filter only for attached or non attached Volumes"
+    attached: Boolean
+  ): W1VolumeListResponse
+  "Get Volume Attachment"
+  getVolumeAttachment(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1VolumeAttachmentResponse
+  "Get Volume Attachments of an Instance"
+  getInstanceVolumeAttachments(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1InstanceVolumeAttachmentsResponse
+  "Get Floating IP Attachments of an Instance"
+  getInstanceFloatingIPAttachments(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1InstanceFloatingIPAttachmentsResponse
+  # getImageListOS(tenantId: String!): [Image]
+  "Get Image List"
+  getImageList(
+    "ID of Project"
+    projectId: UUID!
+    "Pagination"
+    pagination: PaginationInput
+  ): W1ImageListResponse
+  "Get Key List"
+  getKeyList(
+    "ID of Project"
+    projectId: UUID
+    pagination: PaginationInput
+  ): W1KeyListResponse
+  "Get Key"
+  getKey(
+    "ID"
+    id: UUID
+    "ID of Project"
+    projectId: UUID
+    "Name"
+    name: String
+    "Project Wide"
+    projectWide: Boolean
+  ): W1KeyResponse
+  "Get Default Project"
+  getDefaultProject: ProjectResponse
+  "Get Projects"
+  getProjectList: ProjectListResponse
+  "Get File by its Name"
+  getFileByName(
+    "ID of Storage where file is stored"
+    storageId: UUID!
+    "Name"
+    name: String!
+  ): FileResponse
+  "Get Operating System List"
+  getOperatingSystemList: OperatingSystemListResponse
+  "Get Floating IP List"
+  getFloatingIPList(
+    "ID of Project"
+    projectId: UUID!
+    "If true or false filter only for attached or non attached Floating IPs"
+    attached: Boolean
+    "Pagination"
+    pagination: PaginationInput
+  ): FloatingIPListResponse
+  getFloatingIP(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): FloatingIPResponse
+  "Get Floating IP Attachment"
+  getFloatingIPAttachment(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): FloatingIPAttachmentResponse
+  "Get Quota List"
+  getQuotaList(
+    "ID of Project"
+    projectId: UUID!
+    pagination: PaginationInput
+  ): QuotaListResponse
+  "Get Quota"
+  getQuota("ID of Quota" id: UUID!): QuotaResponse
+  "Get Forecast Billing"
+  getForecastBilling(
+    "projectId"
+    projectId: UUID!
+    atDate: String
+  ): BillListResponse
+  "Get Actual Billing"
+  getActualBilling(
+    "projectId"
+    projectId: UUID!
+    "pagination"
+    pagination: PaginationInput
+  ): BillListResponse
+  "Get Project Access List"
+  getProjectAccessUserList(
+    "projectId"
+    projectId: UUID!
+    "pagination"
+    pagination: PaginationInput
+  ): UserListResponse
+  "Get Software List"
+  getSoftwareList(
+    "category"
+    category: SoftwareCategory
+    "searchText"
+    searchText: String
+  ): SoftwareListResponse
+  "Get Software Mode List"
+  getSoftware("Id of software" id: UUID!): SoftwareResponse
+  "Get Installed Software"
+  getInstalledSoftwareList(
+    "Project ID"
+    projectId: UUID!
+    "Pagination"
+    pagination: PaginationInput
+  ): InstalledSoftwareListResponse
+  getInstalledSoftware(
+    "ID"
+    id: UUID!
+    "Project ID"
+    projectId: UUID!
+  ): InstalledSoftwareResponse
+  "Get pricing list"
+  getPricingList: PricingListResponse
+  "List api keys of a user"
+  getApiKeyList(pagination: PaginationInput): ApiKeyListResponse
+  "Get Software Configuration"
+  getSoftwareConfiguration(
+    "ID"
+    id: UUID!
+    "Project ID"
+    projectId: UUID!
+  ): SoftwareConfigurationResponse
+  "Retrieve revolut order list"
+  getRevolutOrderList: RevolutOrderListResponse
+  "Get revolut customer card"
+  getRevolutCustomerCard: RevolutCardResponse
+}
+
+type Mutation {
+  "Create Custom Image"
+  createCustomImage(
+    "ID of Project"
+    projectId: UUID!
+    "Name"
+    name: String!
+    "Operating System"
+    os: String!
+    "Filename"
+    filename: String!
+  ): W1ImageResponse
+  "Delete Custom Image"
+  deleteCustomImage("ID" id: UUID!, "ID of Project" projectId: UUID!): Response
+  "Update User"
+  updateUser("Username" username: Email!): Boolean
+  "TBD"
+  twoFactor("TBD" auth: UUID!, "TBD" payload: JSON): Boolean
+  "Update Instance Status"
+  updateInstanceStatus("ID" id: UUID!, "TBD" update: JSON!): Response
+  "Create Floating IP"
+  createFloatingIP("ID of Project" projectId: UUID!): FloatingIPResponse
+  "Create Network"
+  createNetwork(
+    "Name"
+    name: String!
+    "Availability Zone"
+    availabilityZone: AvailabilityZone
+    "ID of Project"
+    projectId: UUID
+    "Subnets"
+    subnets: [SubnetInput]!
+  ): W1NetworkResponse
+  "Update Network"
+  updateNetwork(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID
+    "Name"
+    name: String!
+  ): W1NetworkResponse
+  "Delete Network"
+  deleteNetwork("ID" id: UUID!, "ID of Project" projectId: UUID!): Response
+  "Create Key"
+  createKey(
+    "Name"
+    name: String!
+    "ID of Project"
+    projectId: UUID
+    "Public Key"
+    publicKey: String
+    "Shoule the key be valid for the complete project or only the user"
+    projectWide: Boolean = false
+  ): W1KeyResponse
+  "Update Key"
+  updateKey(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID
+    "Name"
+    name: String!
+  ): W1KeyResponse
+  "Delete Key"
+  deleteKey("ID" id: UUID!, "ID of Project" projectId: UUID): Response
+  "Create Volume"
+  createVolume(
+    "Name"
+    name: String!
+    "ID of Project"
+    projectId: UUID!
+    "Size in GB"
+    size: Int!
+    "Volume Type"
+    volumeType: W1VolumeType!
+  ): W1VolumeResponse
+  "Delete Volume"
+  deleteVolume("ID" id: UUID!, "ID of Project" projectId: UUID!): Response
+  "Extend Volume"
+  extendVolume(
+    "ID"
+    id: UUID
+    "ID of Project"
+    projectId: UUID!
+    "Size"
+    size: Int!
+  ): W1VolumeResponse
+  "Attach Volume To Instance"
+  attachVolumeToInstance(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+    "ID of Instance"
+    instanceId: UUID!
+    "Target device name i.e. sdx"
+    device: String
+  ): Response
+  "Detach Volume From Instance"
+  detachVolumeFromInstance(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+    "ID of Instance"
+    instanceId: UUID!
+  ): Response
+  "Create Security Group"
+  createSecurityGroup(
+    "Name"
+    name: String!
+    "Description"
+    description: String
+    "ID of Proejct"
+    projectId: UUID!
+    "Rules"
+    rules: [W1SecurityGroupRuleInput]
+  ): W1SecurityGroupResponse
+  "Delete Security Group"
+  deleteSecurityGroup(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): Response
+  "Create Security Group Association"
+  createSecurityGroupAssociation(
+    "ID of Project"
+    projectId: UUID!
+    "ID of Security Group"
+    securityGroupId: UUID!
+    "ID of VM"
+    vmId: UUID
+    "ID of Subnet"
+    subnetId: UUID
+  ): W1SecurityGroupAssociationResponse
+  "Delete Security Group Association"
+  deleteSecurityGroupAssociation(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): Response
+  "Create Security Group Rule"
+  createSecurityGroupRule(
+    "ID of Project"
+    projectId: UUID!
+    "ID of Security Group"
+    securityGroupId: UUID!
+    "Name"
+    name: String!
+    "Description"
+    description: String!
+    "Direction"
+    direction: SecurityGroupRuleDirection!
+    "Ethernet Type"
+    etherType: EtherType!
+    "Priority"
+    priority: Int!
+    "Minimum port in range"
+    portRangeMin: Int!
+    "Maximum port in range"
+    portRangeMax: Int!
+    "Protocol"
+    protocol: Protocol!
+    "Source IP/CIDR"
+    source: String!
+    "Destination IP/CIDR"
+    destination: String!
+  ): W1SecurityGroupRuleResponse
+  "Update Security Group Rule"
+  updateSecurityGroupRule(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+    "ID of Security Group"
+    securityGroupId: UUID!
+    "Name"
+    name: String!
+    "Description"
+    description: String!
+    "Direction"
+    direction: SecurityGroupRuleDirection!
+    "Ethernet Type"
+    etherType: EtherType!
+    "Priority"
+    priority: Int!
+    "Minimum port in range"
+    portRangeMin: Int!
+    "Maximum port in range"
+    portRangeMax: Int!
+    "Protocol"
+    protocol: Protocol!
+    "Source IP/CIDR"
+    source: String!
+    "Destination IP/CIDR"
+    destination: String!
+  ): W1SecurityGroupRuleResponse
+  "Delete Security Group Rule"
+  deleteSecurityGroupRule(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): Response
+  "Create Project"
+  createProject("Name" name: String!, "Parent" parent: UUID): UUID
+  "Create Instance"
+  createInstance(
+    "Name"
+    name: String!
+    "Image"
+    image: UUID!
+    "Flavor"
+    flavor: UUID!
+    "Zone"
+    zone: AvailabilityZone!
+    "Networks"
+    networks: [UUID!]!
+    "ID of Project"
+    projectId: UUID
+    "Should the instance be managed?"
+    managed: Boolean!
+    "SSH Keys"
+    sshKeys: [UUID!]
+  ): W1InstanceResponse
+  "Start Instance"
+  startInstance(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1InstanceResponse
+  "Shut down Instance"
+  shutDownInstance(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1InstanceResponse
+  "Delete Instance"
+  deleteInstance(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): Response
+  rebootInstance(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1InstanceResponse
+  hardRebootInstance(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1InstanceResponse
+  forceShutDownInstance(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): W1InstanceResponse
+  "Refresh status of one Instance or all Instances of a project"
+  refreshInstanceStatus(
+    "ID"
+    id: UUID
+    "ID of Project"
+    projectId: UUID!
+  ): W1InstanceListResponse
+  "Create Loadbalancer"
+  createLoadBalancer(
+    "ID of Project"
+    projectId: UUID!
+    "Name"
+    name: String!
+    "Description"
+    description: String
+  ): LoadBalancerResponse
+  "Delete Loadbalancer"
+  deleteLoadBalancer("ID" id: UUID!, "ID of Project" projectId: UUID!): Response
+  "Create Loadbalancer Frontend IP"
+  createLoadBalancerFrontendIP(
+    "ID of Project"
+    projectId: UUID!
+    "Name"
+    name: String!
+    "ID of Loadbalancer"
+    loadBalancerId: UUID!
+    "ID of Floating IP"
+    floatingIPId: UUID!
+  ): LoadBalancerFrontendIPResponse
+  "Delete Loadbalancer Frontend IP"
+  deleteLoadBalancerFrontendIP(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): Response
+  "Create Loadbalancer Backend"
+  createLoadBalancerBackend(
+    "ID of Project"
+    projectId: UUID!
+    "Name"
+    name: String!
+    "ID of Loadbalancer"
+    loadBalancerId: UUID!
+    "Instances"
+    vms: [UUID!]
+    "Health Check"
+    healthCheck: LoadBalancerHealthCheckInput
+  ): LoadBalancerBackendResponse
+  "Add Instances To Loadbalancer Backend"
+  addVmsToLoadBalancerBackend(
+    "ID of Project"
+    projectId: UUID!
+    "ID of Loadbalancer Backend"
+    loadBalancerBackendId: UUID!
+    "Instances"
+    vms: [UUID!]!
+  ): Response
+  "Remove Instances From Loadbalancer Backend"
+  removeVmsFromLoadBalancerBackend(
+    "ID of Project"
+    projectId: UUID!
+    "ID of Loadbalancer Backend"
+    loadBalancerBackendId: UUID!
+    "Instances"
+    vms: [UUID!]!
+  ): Response
+  "Create Loadbalancer Health Check"
+  createLoadBalancerHealthCheck(
+    "ID of Project"
+    projectId: UUID!
+    "ID of Loadbalancer Backend"
+    loadBalancerBackendId: UUID!
+    "Protocol"
+    protocol: HealthCheckProtocol!
+    "Port"
+    port: Int!
+    "Path"
+    path: String
+  ): LoadBalancerHealthCheckResponse
+  "Delete Loadbalancer Health Check"
+  deleteLoadBalancerHealthCheck(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): Response
+  "Create Loadbalancer Rule"
+  createLoadBalancerRule(
+    "ID of Project"
+    projectId: UUID!
+    "ID of Loadbalancer Frontend"
+    loadBalancerFrontendIPId: UUID!
+    "ID of Loadbalancer Backend"
+    loadBalancerBackendId: UUID!
+    "Frontend Port"
+    frontendPort: Int!
+    "Backend Port"
+    backendPort: Int!
+    "Algorithm"
+    algorithm: AlgorithmType!
+  ): LoadBalancerRuleResponse
+  "Delete Loadbalancer Rule"
+  deleteLoadBalancerRule(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+  ): Response
+  "Delete Floating IP"
+  deleteFloatingIP("ID" id: UUID!, "ID of Project" projectId: UUID!): Response
+  "Create Floating Group"
+  createFloatingGroup(
+    "ID"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+    "Instances for Floating Group"
+    vms: [FloatingGroupVmInput]
+    "Nat to VMs private IP"
+    natToVmsPrivateIp: Boolean
+  ): FloatingGroupResponse
+  "Delete Floating Group"
+  deleteFloatingGroupById(
+    "ID"
+    id: UUID
+    "ID of Project"
+    projectId: UUID!
+  ): Response
+  "Delete Floating Group by Ip and Instance ID"
+  deleteFloatingGroupByFloatingIpIdAndInstanceId(
+    "ID of Project"
+    projectId: UUID!
+    "ID of FloatingIP"
+    floatingIpId: UUID!
+    "ID of Instance"
+    instanceId: UUID!
+  ): Response
+  "Update Profile"
+  updateProfile(
+    "Newsletter OptIn"
+    newsletterOptIn: Boolean
+    "Old Password"
+    oldPassword: String
+    "Password"
+    password: String
+    "Salt for password hashing"
+    salt: String
+    "Algorithm for password hashing"
+    algo: Int
+    "Cost for password hashing"
+    cost: Int
+  ): ProfileResponse
+  "Update Organization"
+  updateOrganization(
+    "Bank Owner Name"
+    bankOwnerName: String
+    "IBAN"
+    iban: String
+    "BIC"
+    bic: String
+    "Bank Name"
+    bankName: String
+    "Bank Account Number"
+    bankAccountNumber: String
+    "IFSC Code"
+    ifscCode: String
+    "SWIFT Code"
+    swiftCode: String
+    "Commercial Register Number"
+    commercialRegisterNumber: String
+    "Register Court"
+    registerCourt: String
+    "Vat Number"
+    vatNumber: String
+    "Agree SEPA"
+    agreeSEPA: Boolean
+  ): OrganizationResponse
+  "Invite User"
+  inviteUser(
+    "E-Mail"
+    email: String!
+    "Project ID"
+    projectId: UUID!
+    "Project Role"
+    projectRole: Int!
+  ): Response
+  "Install Demo"
+  installDemo("app" app: String!): Response
+  "Install Software"
+  installSoftware(
+    "Name"
+    name: String!
+    "Description"
+    description: String!
+    "Project ID"
+    projectId: UUID!
+    "Software ID"
+    softwareId: UUID!
+    "modeId"
+    modeId: UUID!
+    "params"
+    params: JSON
+  ): InstalledSoftwareResponse
+  uninstallSoftware("ID" id: UUID, "ID of Project" projectId: UUID!): Response
+  "Create API Key"
+  createApiKey(
+    "Description"
+    description: String
+    "Expire at"
+    expireAt: String
+  ): ApiKeyResponse
+  "Delete API Key"
+  deleteApiKey("id" id: UUID!): Response
+  "Delete Profile"
+  deleteProfile: Response
+  "Cancel Organization Change Request"
+  cancelOrganizationChangeRequest: Response
+  "Configure Software"
+  configureSoftware(
+    "ID"
+    id: UUID!
+    "Project ID"
+    projectId: UUID!
+    "params"
+    params: JSON
+  ): Response
+  "Prepare revolut customer card setup"
+  prepareRevolutCustomerCardSetup: RevolutOrderResponse
+  "Delete revolut customer card"
+  deleteRevolutCustomerCard: Response
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}

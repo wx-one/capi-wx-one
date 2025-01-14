@@ -1,0 +1,312 @@
+query me {
+  me {
+    id
+    username
+    role
+  }
+}
+
+query getDefaultProject {
+  getDefaultProject {
+    code
+    err
+    msg {
+      id
+      name
+    }
+  }
+}
+
+query getFloatingIPAttachment($id: UUID!, $projectId: UUID!) {
+  getFloatingIPAttachment(id: $id, projectId: $projectId) {
+    code
+    err
+    msg {
+      __typename
+      ... on FloatingIPInstanceAttachment {
+        natToVmsPrivateIp
+        vms {
+          id
+          priority
+          vmId
+        }
+      }
+    }
+  }
+}
+
+mutation deleteFloatingGroupByFloatingIpIdAndInstanceId(
+  $projectId: UUID!
+  $floatingIPId: UUID!
+  $instanceId: UUID!
+) {
+  deleteFloatingGroupByFloatingIpIdAndInstanceId(
+    projectId: $projectId
+    floatingIpId: $floatingIPId
+    instanceId: $instanceId
+  ) {
+    err
+    code
+    msg
+  }
+}
+
+mutation createKey(
+  $name: String!
+  $publicKey: String!
+  # @genqlient(omitempty: true)
+  $projectId: UUID
+  $projectWide: Boolean
+) {
+  createKey(
+    name: $name
+    publicKey: $publicKey
+    projectId: $projectId
+    projectWide: $projectWide
+  ) {
+    code
+    err
+    msg {
+      id
+    }
+  }
+}
+
+query getKey(
+  # @genqlient(omitempty: true)
+  $id: UUID
+  # @genqlient(omitempty: true)
+  $name: String
+  # @genqlient(omitempty: true)
+  $projectId: UUID
+  # @genqlient(omitempty: true, pointer: true)
+  $projectWide: Boolean
+) {
+  getKey(
+    id: $id
+    name: $name
+    projectId: $projectId
+    projectWide: $projectWide
+  ) {
+    code
+    err
+    msg {
+      id
+      name
+      publicKey
+      projectWide
+    }
+  }
+}
+
+mutation deleteKey(
+  $id: UUID!
+  # @genqlient(omitempty: true)
+  $projectId: UUID
+) {
+  deleteKey(id: $id, projectId: $projectId) {
+    code
+    err
+    msg
+  }
+}
+
+mutation updateKey(
+  $id: UUID!
+  # @genqlient(omitempty: true)
+  $projectId: UUID
+  $name: String!
+) {
+  updateKey(id: $id, name: $name, projectId: $projectId) {
+    code
+    err
+    msg {
+      id
+    }
+  }
+}
+
+mutation createNetwork(
+  $name: String!
+  $availabilityZone: AvailabilityZone
+  $projectId: UUID
+  $subnets: [SubnetInput]!
+) {
+  createNetwork(
+    projectId: $projectId
+    name: $name
+    availabilityZone: $availabilityZone
+    subnets: $subnets
+  ) {
+    code
+    err
+    msg {
+      id
+      name
+      subnets {
+        cidr
+        id
+        name
+      }
+    }
+  }
+}
+
+query getNetwork($id: UUID!, $projectId: UUID!) {
+  getNetwork(id: $id, projectId: $projectId) {
+    code
+    err
+    msg {
+      id
+      name
+      availabilityZone
+      subnets {
+        id
+        name
+        ipVersion
+        cidr
+      }
+    }
+  }
+}
+
+mutation deleteNetwork($id: UUID!, $projectId: UUID!) {
+  deleteNetwork(id: $id, projectId: $projectId) {
+    code
+    err
+    msg
+  }
+}
+
+mutation updateNetwork($id: UUID!, $projectId: UUID, $name: String!) {
+  updateNetwork(id: $id, name: $name, projectId: $projectId) {
+    code
+    err
+    msg {
+      id
+    }
+  }
+}
+
+mutation deleteInstance($id: UUID!, $projectId: UUID!) {
+  deleteInstance(id: $id, projectId: $projectId) {
+    code
+    err
+    msg
+  }
+}
+
+mutation createFloatingIP($projectId: UUID!) {
+  createFloatingIP(projectId: $projectId) {
+    code
+    err
+    msg {
+      id
+      ip
+    }
+  }
+}
+
+mutation deleteFloatingIP($id: UUID!, $projectId: UUID!) {
+  deleteFloatingIP(id: $id, projectId: $projectId) {
+    code
+    err
+    msg
+  }
+}
+
+mutation createFloatingGroup(
+  $id: UUID!
+  $projectId: UUID!
+  $vms: [FloatingGroupVmInput]
+  $natToVmsPrivateIp: Boolean
+) {
+  createFloatingGroup(
+    id: $id
+    projectId: $projectId
+    vms: $vms
+    natToVmsPrivateIp: $natToVmsPrivateIp
+  ) {
+    code
+    err
+    msg {
+      id
+      vmId
+    }
+  }
+}
+
+mutation createInstance(
+  $networkId: UUID!
+  $flavorId: UUID!
+  $imageId: UUID!
+  $projectId: UUID!
+  $name: String!
+  $sshKeys: [UUID!]!
+  $zone: AvailabilityZone!
+  $managed: Boolean!
+) {
+  createInstance(
+    flavor: $flavorId
+    image: $imageId
+    name: $name
+    networks: [$networkId]
+    sshKeys: $sshKeys
+    projectId: $projectId
+    zone: $zone
+    managed: $managed
+  ) {
+    code
+    err
+    msg {
+      id
+      status
+      addresses
+    }
+  }
+}
+
+query getFloatingIP($id: UUID!, $projectId: UUID!) {
+  getFloatingIP(id: $id, projectId: $projectId) {
+    code
+    err
+    msg {
+      ip
+    }
+  }
+}
+
+query getInstance($id: UUID!, $projectId: UUID!) {
+  getInstance(id: $id, projectId: $projectId) {
+    code
+    err
+    msg {
+      id
+      name
+      status
+      availabilityZone
+      flavorId
+    }
+  }
+}
+
+query getFlavorByName($name: String!) {
+  getFlavorByName(name: $name) {
+    code
+    err
+    msg {
+      id
+    }
+  }
+}
+
+query getImageList($projectId: UUID!) {
+  getImageList(projectId: $projectId) {
+    code
+    err
+    msg {
+      id
+      name
+    }
+  }
+}
