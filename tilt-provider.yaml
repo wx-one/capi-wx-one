@@ -1,0 +1,6 @@
+name: wxone
+config:
+  image: controller:latest
+  label: CAPW
+  live_reload_deps: ["cmd", "go.mod", "go.sum", "api", "internal", "templates"]
+  go_main: cmd/main.go
