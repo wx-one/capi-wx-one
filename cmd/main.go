@@ -37,9 +37,11 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	infrastructurev1beta1 "github.com/wx-one/cluster-api-provider-wxone/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+
+	infrav1 "github.com/wx-one/cluster-api-provider-wxone/api/v1beta1"
 	"github.com/wx-one/cluster-api-provider-wxone/internal/controller"
-	webhookinfrastructurev1beta1 "github.com/wx-one/cluster-api-provider-wxone/internal/webhook/v1beta1"
+	webgookv1 "github.com/wx-one/cluster-api-provider-wxone/internal/webhook/v1beta1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -51,7 +53,8 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(infrastructurev1beta1.AddToScheme(scheme))
+	utilruntime.Must(infrav1.AddToScheme(scheme))
+	clusterv1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -203,6 +206,24 @@ func main() {
 		os.Exit(1)
 	}
 
+	domain := os.Getenv("WX_ONE_HOST")
+	if domain == "" {
+		setupLog.Info("missing required env WX_ONE_HOST")
+		os.Exit(1)
+	}
+
+	apiKey := os.Getenv("WX_ONE_USERNAME")
+	if apiKey == "" {
+		setupLog.Info("missing required env WX_ONE_USERNAME")
+		os.Exit(1)
+	}
+
+	recipient := os.Getenv("WX_ONE_PASSWORD")
+	if recipient == "" {
+		setupLog.Info("missing required env WX_ONE_PASSWORD")
+		os.Exit(1)
+	}
+
 	if err = (&controller.WXOneClusterReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -219,28 +240,28 @@ func main() {
 	}
 	// nolint:goconst
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err = webhookinfrastructurev1beta1.SetupWXOneMachineWebhookWithManager(mgr); err != nil {
+		if err = webgookv1.SetupWXOneMachineWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "WXOneMachine")
 			os.Exit(1)
 		}
 	}
 	// nolint:goconst
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err = webhookinfrastructurev1beta1.SetupWXOneMachineTemplateWebhookWithManager(mgr); err != nil {
+		if err = webgookv1.SetupWXOneMachineTemplateWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "WXOneMachineTemplate")
 			os.Exit(1)
 		}
 	}
 	// nolint:goconst
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err = webhookinfrastructurev1beta1.SetupWXOneClusterWebhookWithManager(mgr); err != nil {
+		if err = webgookv1.SetupWXOneClusterWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "WXOneCluster")
 			os.Exit(1)
 		}
 	}
 	// nolint:goconst
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err = webhookinfrastructurev1beta1.SetupWXOneClusterTemplateWebhookWithManager(mgr); err != nil {
+		if err = webgookv1.SetupWXOneClusterTemplateWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "WXOneClusterTemplate")
 			os.Exit(1)
 		}
