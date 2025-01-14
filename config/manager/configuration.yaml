@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wxone-secret
+  namespace: system
+type: Opaque
+stringData:
+  password: ${WX_ONE_PASSWORD}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wxone-config
+  namespace: system
+data:
+  host: ${WX_ONE_HOST}
+  username: ${WX_ONE_USERNAME}

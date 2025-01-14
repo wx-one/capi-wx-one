@@ -67,6 +67,22 @@ spec:
         imagePullPolicy: IfNotPresent
         name: manager
         ports: []
+        env:
+        - name: WX_ONE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wxone-secret
+              key: password
+        - name: WX_ONE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: wxone-config
+              key: host
+        - name: WX_ONE_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: wxone-config
+              key: username
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
