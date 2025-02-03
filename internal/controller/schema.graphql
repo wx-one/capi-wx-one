@@ -193,6 +193,8 @@ type W1Image {
   storageId: UUID
   "Filename (Custom Image only)"
   filename: String
+  "Status of image"
+  status: ImageStatus
 }
 
 "Image Response"
@@ -794,6 +796,17 @@ type W1VolumeResponse {
   "Success Message"
   msg: W1Volume
 }
+
+"Status of an image"
+enum ImageStatus {
+  "Instance is ready"
+  READY
+  "Image is waiting to be prepared"
+  PENDING
+  "error on preparing image"
+  ERROR
+}
+
 
 "Status of an instance"
 enum InstanceStatus {
@@ -1579,6 +1592,8 @@ type Query {
     projectId: UUID!
     "Pagination"
     pagination: PaginationInput
+    "If true or false filter only for ready Images"
+    ready: Boolean
   ): W1ImageListResponse
   "Get Key List"
   getKeyList(
