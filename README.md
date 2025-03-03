@@ -16,7 +16,9 @@ The Kubernetes Cluster API Provider WXOne is an infrastructure provider for the 
 
 #### Develop with tilt (recommended)
 
-- change reg_port in ../cluster-api/hack/ to 5002 so that local registry does not collide with api
+- create a flavor of type `vs1` with name `vs1 monthly`:
+- create an image with name `local`
+- change reg_port in ../cluster-api/hack/kind-install-for-capd to 5002 so that local registry does not collide with api
 
 ```sh
 # setup
