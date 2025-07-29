@@ -325,6 +325,14 @@ type Quota {
   volumeType: W1VolumeType
 }
 
+"Boot Disk"
+input BootDiskInput {
+  "ID of Volume"
+  id: UUID!
+  "Should volume be reprovisioned"
+  reprovision: Boolean!
+}
+
 "Quota Input"
 input QuotaInput {
   "Type of quota"
@@ -615,6 +623,8 @@ type RevolutCustomer {
   id: String!
   "E-Mail"
   email: String
+  "WX-ONE Organization ID"
+  organizationId: UUID
   "WX-ONE User ID"
   userId: UUID
 }
@@ -785,6 +795,8 @@ type W1Volume {
   volumeType: W1VolumeType!
   "attachedTo"
   attachedTo: W1Instance
+  "device"
+  device: String
 }
 
 "Volume Response"
@@ -806,7 +818,6 @@ enum ImageStatus {
   "error on preparing image"
   ERROR
 }
-
 
 "Status of an instance"
 enum InstanceStatus {
@@ -1416,6 +1427,8 @@ type OrganizationChangeRequest {
 
 "Organization"
 type Organization {
+  "id"
+  id: UUID
   "Name"
   name: String
   "Address line 1"
@@ -1458,6 +1471,12 @@ type Organization {
   agreeSEPA: Boolean
   "Existing Change Request"
   changeRequest: OrganizationChangeRequest
+  "External Mandate"
+  extMandate: String
+  "Revolut Customer ID"
+  revolutCustomerId: String
+  "Revolut Customer Card"
+  revolutCustomerCard: RevolutCard
 }
 
 "Organization Response"
@@ -1536,7 +1555,9 @@ type Query {
   "Get Instance"
   getInstance(
     "ID"
-    id: UUID!
+    id: UUID
+    "Name"
+    name: String
     "ID of Project"
     projectId: UUID!
   ): W1InstanceResponse
@@ -1557,6 +1578,15 @@ type Query {
     projectId: UUID!
   ): W1NetworkResponse
   # getSecurityGroupList(page: Int, limit: Int): SecurityGroupListResponse
+  "Get Volume"
+  getVolume(
+    "ID"
+    id: UUID
+    "name"
+    name: String
+    "ID of Project"
+    projectId: UUID!
+  ): W1VolumeResponse
   "Get Volume List"
   getVolumeList(
     "ID of Project"
@@ -1811,7 +1841,7 @@ type Mutation {
     "ID of Instance"
     instanceId: UUID!
     "Target device name i.e. sdx"
-    device: String
+    device: String!
   ): Response
   "Detach Volume From Instance"
   detachVolumeFromInstance(
@@ -1941,6 +1971,8 @@ type Mutation {
     managed: Boolean!
     "SSH Keys"
     sshKeys: [UUID!]
+    "Make the boot disk an external one"
+    bootDisk: BootDiskInput
   ): W1InstanceResponse
   "Start Instance"
   startInstance(
@@ -1957,12 +1989,7 @@ type Mutation {
     projectId: UUID!
   ): W1InstanceResponse
   "Delete Instance"
-  deleteInstance(
-    "ID"
-    id: UUID!
-    "ID of Project"
-    projectId: UUID!
-  ): Response
+  deleteInstance("ID" id: UUID!, "ID of Project" projectId: UUID!): Response
   rebootInstance(
     "ID"
     id: UUID!
