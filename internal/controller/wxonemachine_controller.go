@@ -160,8 +160,26 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 		return ctrl.Result{}, err
 	}
 	log.Info("patched without errors")
+	var host string
+	var user string
+	var pass string
 
-	wxOneClients, err := NewWXOneClients(log, ctx)
+	if wxOneCluster.Spec.CredentialsSecretRef != nil {
+		var s corev1.Secret
+		key := types.NamespacedName{
+			Namespace: wxOneCluster.Namespace,
+			Name:      wxOneCluster.Spec.CredentialsSecretRef.Name,
+		}
+		if err := r.Client.Get(ctx, key, &s); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		host = string(s.Data["host"])
+		user = string(s.Data["username"])
+		pass = string(s.Data["password"])
+	}
+	wxOneClients, err := NewWXOneClients(log, ctx, host, user, pass)
+
 	if err != nil {
 		log.Error(err, "failed to create WXOneClients")
 		return ctrl.Result{}, err
@@ -317,7 +335,25 @@ func (r *WXOneMachineReconciler) reconcileDelete(ctx context.Context, cluster *c
 		return ctrl.Result{}, err
 	}
 
-	wxOneClients, err := NewWXOneClients(log, ctx)
+	var host string
+	var user string
+	var pass string
+
+	if wxOneCluster.Spec.CredentialsSecretRef != nil {
+		var s corev1.Secret
+		key := types.NamespacedName{
+			Namespace: wxOneCluster.Namespace,
+			Name:      wxOneCluster.Spec.CredentialsSecretRef.Name,
+		}
+		if err := r.Client.Get(ctx, key, &s); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		host = string(s.Data["host"])
+		user = string(s.Data["username"])
+		pass = string(s.Data["password"])
+	}
+	wxOneClients, err := NewWXOneClients(log, ctx, host, user, pass)
 	if err != nil {
 		log.Error(err, "failed to create WXOneClients")
 		return ctrl.Result{}, err

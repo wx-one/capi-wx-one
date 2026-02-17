@@ -240,7 +240,25 @@ func (r *WXOneClusterReconciler) reconcileDelete(wxoneCluster *infrav1.WXOneClus
 		return err
 	}
 
-	wxOneClients, err := NewWXOneClients(log, ctx)
+	var host string
+	var user string
+	var pass string
+
+	if wxoneCluster.Spec.CredentialsSecretRef != nil {
+		var s corev1.Secret
+		key := types.NamespacedName{
+			Namespace: wxoneCluster.Namespace,
+			Name:      wxoneCluster.Spec.CredentialsSecretRef.Name,
+		}
+		if err := r.Client.Get(ctx, key, &s); err != nil {
+			return err
+		}
+
+		host = string(s.Data["host"])
+		user = string(s.Data["username"])
+		pass = string(s.Data["password"])
+	}
+	wxOneClients, err := NewWXOneClients(log, ctx, host, user, pass)
 	if err != nil {
 		log.Error(err, "failed to create WXOneClients")
 		return err
