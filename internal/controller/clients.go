@@ -36,10 +36,16 @@ func setCookiesMiddleware(next http.RoundTripper, cookie string) http.RoundTripp
 }
 
 // Session return the DO session.
-func NewWXOneClients(log logr.Logger, ctx context.Context) (WxOneClients, error) {
-	host := os.Getenv("WX_ONE_HOST")
-	username := os.Getenv("WX_ONE_USERNAME")
-	password := os.Getenv("WX_ONE_PASSWORD")
+func NewWXOneClients(log logr.Logger, ctx context.Context, host string, username string, password string) (WxOneClients, error) {
+	if host == "" {
+		host = os.Getenv("WX_ONE_HOST")
+	}
+	if username == "" {
+		username = os.Getenv("WX_ONE_USERNAME")
+	}
+	if password == "" {
+		password = os.Getenv("WX_ONE_PASSWORD")
+	}
 
 	log.Info("Creating WX-ONE clients")
 

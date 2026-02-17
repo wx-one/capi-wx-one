@@ -7,6 +7,6 @@ metadata:
   name: wxonemachine-sample
 spec:
   flavor:
-    name: "vs1.vs1 monthly"
+    name: 'dd1.medium'
   image:
     name: local

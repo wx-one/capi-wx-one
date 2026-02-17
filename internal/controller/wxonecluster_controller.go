@@ -19,7 +19,9 @@ package controller
 import (
 	"context"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
@@ -101,6 +103,10 @@ func (r *WXOneClusterReconciler) reconcileNormal(wxoneCluster *infrav1.WXOneClus
 		return err
 	}
 
+	var host string
+	var user string
+	var pass string
+
 	controllerutil.AddFinalizer(wxoneCluster, infrav1.ClusterFinalizer)
 	log.Info("patch cluster")
 	if err := patchHelper.Patch(ctx, wxoneCluster); err != nil {
@@ -109,7 +115,21 @@ func (r *WXOneClusterReconciler) reconcileNormal(wxoneCluster *infrav1.WXOneClus
 	}
 	log.Info("patched without errors")
 
-	wxOneClients, err := NewWXOneClients(log, ctx)
+	if wxoneCluster.Spec.CredentialsSecretRef != nil {
+		var s corev1.Secret
+		key := types.NamespacedName{
+			Namespace: wxoneCluster.Namespace,
+			Name:      wxoneCluster.Spec.CredentialsSecretRef.Name,
+		}
+		if err := r.Client.Get(ctx, key, &s); err != nil {
+			return err
+		}
+
+		host = string(s.Data["host"])
+		user = string(s.Data["username"])
+		pass = string(s.Data["password"])
+	}
+	wxOneClients, err := NewWXOneClients(log, ctx, host, user, pass)
 	if err != nil {
 		log.Error(err, "failed to create WXOneClients")
 		return err

@@ -57,6 +57,13 @@ spec:
                 - host
                 - port
                 type: object
+              credentialsSecretRef:
+                properties:
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
               network:
                 properties:
                   name:
