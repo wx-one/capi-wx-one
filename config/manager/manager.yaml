@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   labels:
-    control-plane: controller-manager
+    control-plane: controller-manager-wx-one
     app.kubernetes.io/name: cluster-api-provider-wxone
     app.kubernetes.io/managed-by: kustomize
   name: system
@@ -10,7 +10,7 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
+  name: controller-manager-wx-one
   namespace: system
   labels:
     control-plane: controller-manager-wx-one
@@ -112,5 +112,5 @@ spec:
               memory: 64Mi
           volumeMounts: []
       volumes: []
-      serviceAccountName: controller-manager
+      serviceAccountName: controller-manager-wx-one
       terminationGracePeriodSeconds: 10
