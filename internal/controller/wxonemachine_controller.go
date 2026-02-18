@@ -300,7 +300,7 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 			return ctrl.Result{}, err
 		}
 
-		var uMode W1UserDataMode = "override"
+		var uMode W1UserDataMode = "deepmerge"
 		additional.UserData = &UserDataInput{
 			Content: raw, Mode: &uMode,
 		}

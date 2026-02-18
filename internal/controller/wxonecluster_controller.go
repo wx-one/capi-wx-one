@@ -92,10 +92,10 @@ func (r *WXOneClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Handle non-deleted clusters
-	return ctrl.Result{}, r.reconcileNormal(wxoneCluster, log, ctx)
+	return ctrl.Result{}, r.reconcileNormal(wxoneCluster, log, cluster, ctx)
 }
 
-func (r *WXOneClusterReconciler) reconcileNormal(wxoneCluster *infrav1.WXOneCluster, log logr.Logger, ctx context.Context) error {
+func (r *WXOneClusterReconciler) reconcileNormal(wxoneCluster *infrav1.WXOneCluster, log logr.Logger, cluster *clusterv1.Cluster, ctx context.Context) error {
 	log.Info("starting reconcile normal")
 
 	// Initialize the patch helper
@@ -216,8 +216,24 @@ func (r *WXOneClusterReconciler) reconcileNormal(wxoneCluster *infrav1.WXOneClus
 		wxoneCluster.Status.SSHKey.ResourceID != "" {
 
 		log.Info("set control plane endpoint")
-		wxoneCluster.Spec.ControlPlaneEndpoint.Host = wxoneCluster.Status.FloatingIP.IP
-		wxoneCluster.Spec.ControlPlaneEndpoint.Port = 443
+
+		cluster.Spec.ControlPlaneEndpoint = clusterv1.APIEndpoint{
+			Host: wxoneCluster.Status.FloatingIP.IP,
+			Port: 6443, // kube-apiserver for rke2
+		}
+
+		wxoneCluster.Spec.ControlPlaneEndpoint = clusterv1.APIEndpoint{
+			Host: wxoneCluster.Status.FloatingIP.IP,
+			Port: 6443, // kube-apiserver for rke2
+		}
+
+		if cluster.Spec.ControlPlaneEndpoint.Host != "" {
+			wxoneCluster.Spec.ControlPlaneEndpoint.Host = cluster.Spec.ControlPlaneEndpoint.Host
+		}
+
+		if cluster.Spec.ControlPlaneEndpoint.Port != 0 {
+			wxoneCluster.Spec.ControlPlaneEndpoint.Port = cluster.Spec.ControlPlaneEndpoint.Port
+		}
 
 		// Mark the wxoneCluster ready
 		log.Info("mark cluster ready")
