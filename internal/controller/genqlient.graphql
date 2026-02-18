@@ -245,6 +245,7 @@ mutation createInstance(
   $sshKeys: [UUID!]!
   $zone: AvailabilityZone!
   $managed: Boolean!
+  # @genqlient(omitempty: true, pointer: true)
   $additional: InstanceAdditionalInput
 ) {
   createInstance(

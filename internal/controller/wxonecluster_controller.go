@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/cluster-api/util/patch"
@@ -145,18 +146,18 @@ func (r *WXOneClusterReconciler) reconcileNormal(wxoneCluster *infrav1.WXOneClus
 		wxoneCluster.Status.Project.ResourceID = defaultProject.GetDefaultProject.Msg.Id
 	}
 
-	subnetInput := make([]SubnetInput, len(wxoneCluster.Spec.Network.Subnets))
+	subnetInput := make([]*SubnetInput, len(wxoneCluster.Spec.Network.Subnets))
 	for i, item := range wxoneCluster.Spec.Network.Subnets {
-		subnetInput[i] = SubnetInput{
+		subnetInput[i] = &SubnetInput{
 			Name:      item.Name,
 			IpVersion: item.IPVersion,
-			Cidr:      item.CIDR,
+			Cidr:      ptr.To(item.CIDR),
 		}
 	}
 
 	if wxoneCluster.Status.Network.SubnetReference.ResourceID == "" {
 		log.Info("creating Cluster Network")
-		network, err := createNetwork(ctx, wxOneClients.graphqlClient, wxoneCluster.Spec.Network.Name, AvailabilityZone(wxoneCluster.Spec.AvailabilityZone), wxoneCluster.Status.Project.ResourceID, subnetInput)
+		network, err := createNetwork(ctx, wxOneClients.graphqlClient, wxoneCluster.Spec.Network.Name, ptr.To(AvailabilityZone(wxoneCluster.Spec.AvailabilityZone)), ptr.To(wxoneCluster.Status.Project.ResourceID), subnetInput)
 
 		if err != nil {
 			log.Error(err, "failed to create Cluster Network")
@@ -194,7 +195,7 @@ func (r *WXOneClusterReconciler) reconcileNormal(wxoneCluster *infrav1.WXOneClus
 
 	if wxoneCluster.Status.SSHKey.ResourceID == "" {
 		log.Info("creating SSH Key")
-		sshKey, err := createKey(ctx, wxOneClients.graphqlClient, wxoneCluster.Spec.Network.Name, wxoneCluster.Spec.SSHKey.PublicKey, wxoneCluster.Status.Project.ResourceID, wxoneCluster.Spec.SSHKey.ProjectWide)
+		sshKey, err := createKey(ctx, wxOneClients.graphqlClient, wxoneCluster.Spec.Network.Name, wxoneCluster.Spec.SSHKey.PublicKey, &wxoneCluster.Status.Project.ResourceID, ptr.To(wxoneCluster.Spec.SSHKey.ProjectWide))
 
 		if err != nil {
 			log.Error(err, "failed to create SSH Key for Cluster Machine access")
@@ -303,7 +304,7 @@ func (r *WXOneClusterReconciler) reconcileDelete(wxoneCluster *infrav1.WXOneClus
 
 	if wxoneCluster.Status.SSHKey.ResourceID != "" {
 		log.Info("deleting ssh key", "ssh key", wxoneCluster.Status.SSHKey.ResourceID)
-		_, err := deleteKey(ctx, wxOneClients.graphqlClient, wxoneCluster.Status.SSHKey.ResourceID, wxoneCluster.Status.Project.ResourceID)
+		_, err := deleteKey(ctx, wxOneClients.graphqlClient, wxoneCluster.Status.SSHKey.ResourceID, ptr.To(wxoneCluster.Status.Project.ResourceID))
 
 		if err != nil {
 			log.Error(err, "failed to delete ssh key")

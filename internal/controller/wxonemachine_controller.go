@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -39,12 +40,46 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	sigsyaml "sigs.k8s.io/yaml"
 
 	infrav1 "github.com/wx-one/cluster-api-provider-wxone/api/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	clog "sigs.k8s.io/cluster-api/util/log"
 )
+
+func cloudInitYAMLToJSON(userData []byte) (json.RawMessage, error) {
+	// cloud-init commonly starts with "#cloud-config" (comment header).
+	// YAML parsers *can* handle comments, BUT your conversion path might still fail
+	// if you have non-YAML multi-part content. We'll normalize for the common case.
+
+	b := bytes.TrimSpace(userData)
+
+	// Remove the first line if it is the cloud-init header.
+	// (Still leaves you valid YAML starting at the actual keys.)
+	if bytes.HasPrefix(b, []byte("#cloud-config")) ||
+		bytes.HasPrefix(b, []byte("#cloud-boothook")) ||
+		bytes.HasPrefix(b, []byte("#cloud-config-archive")) {
+		if i := bytes.IndexByte(b, '\n'); i >= 0 {
+			b = bytes.TrimSpace(b[i+1:])
+		} else {
+			return nil, fmt.Errorf("userdata only contained cloud-init header")
+		}
+	}
+
+	// Convert YAML -> JSON
+	j, err := sigsyaml.YAMLToJSON(b)
+	if err != nil {
+		return nil, fmt.Errorf("convert YAML to JSON failed: %w", err)
+	}
+
+	// Optional: validate it is JSON
+	if !json.Valid(j) {
+		return nil, fmt.Errorf("produced invalid JSON")
+	}
+
+	return json.RawMessage(j), nil
+}
 
 // WXOneMachineReconciler reconciles a WXOneMachine object
 type WXOneMachineReconciler struct {
@@ -226,7 +261,7 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 
 		imageFound := false
 		for _, image := range imageList.GetImageList.Msg {
-			if image.Name == wxOneMachine.Spec.Image.Name {
+			if *(image.Name) == wxOneMachine.Spec.Image.Name {
 				imageFound = true
 				wxOneMachine.Status.Image.ResourceID = image.Id
 				log.Info("patch cluster")
@@ -260,16 +295,18 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 		}
 
 		var additional InstanceAdditionalInput
-		var userData UserDataInput
+		raw, err := cloudInitYAMLToJSON(secret.Data["value"])
+		if err != nil {
+			return ctrl.Result{}, err
+		}
 
-		userData = UserDataInput{}
-		raw := json.RawMessage([]byte(string(secret.Data["value"])))
-		userData.Content = raw
-		userData.Mode = "override"
-		additional.UserData = userData
+		var uMode W1UserDataMode = "override"
+		additional.UserData = &UserDataInput{
+			Content: raw, Mode: &uMode,
+		}
 
 		log.Info("creating instance")
-		instance, err := createInstance(ctx, wxOneClients.graphqlClient, wxOneCluster.Status.Network.SubnetReference.ResourceID, wxOneMachine.Status.Flavor.ResourceID, wxOneMachine.Status.Image.ResourceID, wxOneCluster.Status.Project.ResourceID, machine.Name, []string{wxOneCluster.Status.SSHKey.ResourceID}, AvailabilityZone(wxOneCluster.Spec.AvailabilityZone), false, additional)
+		instance, err := createInstance(ctx, wxOneClients.graphqlClient, wxOneCluster.Status.Network.SubnetReference.ResourceID, wxOneMachine.Status.Flavor.ResourceID, wxOneMachine.Status.Image.ResourceID, wxOneCluster.Status.Project.ResourceID, machine.Name, []string{wxOneCluster.Status.SSHKey.ResourceID}, AvailabilityZone(wxOneCluster.Spec.AvailabilityZone), false, &additional)
 		if err != nil {
 			log.Error(err, "Failed to create instance")
 			return ctrl.Result{}, err
@@ -281,7 +318,7 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 		for i, str := range instance.CreateInstance.Msg.Addresses {
 			addresses[i] = v1beta1.MachineAddress{
 				Type:    v1beta1.MachineInternalIP,
-				Address: str,
+				Address: *str,
 			}
 		}
 
@@ -296,7 +333,14 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 	}
 
 	if util.IsControlPlaneMachine(machine) && wxOneMachine.Status.Instance.ResourceID != "" && wxOneMachine.Status.FloatingIPAttachement.ResourceID == "" {
-		floatingIPAttachement, err := createFloatingGroup(ctx, wxOneClients.graphqlClient, wxOneCluster.Status.FloatingIP.ResourceID, wxOneCluster.Status.Project.ResourceID, []FloatingGroupVmInput{{Priority: 0, Vm: wxOneMachine.Status.Instance.ResourceID}}, true)
+
+		vmsFP := []*FloatingGroupVmInput{
+			{
+				Priority: 0,
+				Vm:       wxOneMachine.Status.Instance.ResourceID},
+		}
+
+		floatingIPAttachement, err := createFloatingGroup(ctx, wxOneClients.graphqlClient, wxOneCluster.Status.FloatingIP.ResourceID, wxOneCluster.Status.Project.ResourceID, vmsFP, ptr.To(true))
 		if err != nil {
 			log.Error(err, "Failed to create floating ip attachement")
 			return ctrl.Result{}, err
