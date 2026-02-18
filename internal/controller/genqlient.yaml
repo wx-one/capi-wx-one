@@ -5,11 +5,13 @@
 # https://github.com/Khan/genqlient/blob/main/docs/genqlient.yaml
 schema: schema.graphql
 operations:
-- genqlient.graphql
+  - genqlient.graphql
 generated: generated.go
 bindings:
-  UUID: 
+  JSON:
+    type: encoding/json.RawMessage
+  UUID:
     type: string
-  Email: 
+  Email:
     type: string
 package: controller

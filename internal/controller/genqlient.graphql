@@ -245,6 +245,7 @@ mutation createInstance(
   $sshKeys: [UUID!]!
   $zone: AvailabilityZone!
   $managed: Boolean!
+  $additional: InstanceAdditionalInput
 ) {
   createInstance(
     flavor: $flavorId
@@ -255,6 +256,7 @@ mutation createInstance(
     projectId: $projectId
     zone: $zone
     managed: $managed
+    additional: $additional
   ) {
     code
     err

@@ -48,6 +48,35 @@ func (v *FloatingGroupVmInput) GetPriority() int { return v.Priority }
 // GetVm returns FloatingGroupVmInput.Vm, and is useful for accessing the field via an interface.
 func (v *FloatingGroupVmInput) GetVm() string { return v.Vm }
 
+// Instance Additional Options
+type InstanceAdditionalInput struct {
+	// provision VM with vTPM, ignored if not supported by VM type
+	VTPM bool `json:"vTPM"`
+	// use uefi bios, ignored if not supported by VM type
+	Uefi bool `json:"uefi"`
+	// specify the SEV type, ignored if not supported by VM type
+	SevType W1SevType `json:"sevType"`
+	// sevOptions
+	SevOptions SevOptionsInput `json:"sevOptions"`
+	// userData
+	UserData UserDataInput `json:"userData"`
+}
+
+// GetVTPM returns InstanceAdditionalInput.VTPM, and is useful for accessing the field via an interface.
+func (v *InstanceAdditionalInput) GetVTPM() bool { return v.VTPM }
+
+// GetUefi returns InstanceAdditionalInput.Uefi, and is useful for accessing the field via an interface.
+func (v *InstanceAdditionalInput) GetUefi() bool { return v.Uefi }
+
+// GetSevType returns InstanceAdditionalInput.SevType, and is useful for accessing the field via an interface.
+func (v *InstanceAdditionalInput) GetSevType() W1SevType { return v.SevType }
+
+// GetSevOptions returns InstanceAdditionalInput.SevOptions, and is useful for accessing the field via an interface.
+func (v *InstanceAdditionalInput) GetSevOptions() SevOptionsInput { return v.SevOptions }
+
+// GetUserData returns InstanceAdditionalInput.UserData, and is useful for accessing the field via an interface.
+func (v *InstanceAdditionalInput) GetUserData() UserDataInput { return v.UserData }
+
 // Status of an instance
 type InstanceStatus string
 
@@ -76,6 +105,25 @@ const (
 	InstanceStatusUnknown InstanceStatus = "UNKNOWN"
 )
 
+// Sev Options Input
+type SevOptionsInput struct {
+	// dhCert must be set together with session
+	DhCert string `json:"dhCert"`
+	// session
+	Session string `json:"session"`
+	// kernelHashes
+	KernelHashes string `json:"kernelHashes"`
+}
+
+// GetDhCert returns SevOptionsInput.DhCert, and is useful for accessing the field via an interface.
+func (v *SevOptionsInput) GetDhCert() string { return v.DhCert }
+
+// GetSession returns SevOptionsInput.Session, and is useful for accessing the field via an interface.
+func (v *SevOptionsInput) GetSession() string { return v.Session }
+
+// GetKernelHashes returns SevOptionsInput.KernelHashes, and is useful for accessing the field via an interface.
+func (v *SevOptionsInput) GetKernelHashes() string { return v.KernelHashes }
+
 // Subnet Input
 type SubnetInput struct {
 	// Name
@@ -94,6 +142,44 @@ func (v *SubnetInput) GetIpVersion() string { return v.IpVersion }
 
 // GetCidr returns SubnetInput.Cidr, and is useful for accessing the field via an interface.
 func (v *SubnetInput) GetCidr() string { return v.Cidr }
+
+// UserDataInput
+type UserDataInput struct {
+	// content
+	Content json.RawMessage `json:"content"`
+	// mode, either deepmerge (default) or override
+	Mode W1UserDataMode `json:"mode"`
+}
+
+// GetContent returns UserDataInput.Content, and is useful for accessing the field via an interface.
+func (v *UserDataInput) GetContent() json.RawMessage { return v.Content }
+
+// GetMode returns UserDataInput.Mode, and is useful for accessing the field via an interface.
+func (v *UserDataInput) GetMode() W1UserDataMode { return v.Mode }
+
+// Volume Type
+type W1SevType string
+
+const (
+	// SEV
+	W1SevTypeSev W1SevType = "sev"
+	// SEV ES
+	W1SevTypeSevEs W1SevType = "sev_es"
+	// SEV SNP
+	W1SevTypeSevSnp W1SevType = "sev_snp"
+	// SEV SNP with ephemeral SVSM vTPM, can be combined with a normal vTPM
+	W1SevTypeSevSnpVtpm W1SevType = "sev_snp_vtpm"
+)
+
+// UserDataMode
+type W1UserDataMode string
+
+const (
+	// deepmerge
+	W1UserDataModeDeepmerge W1UserDataMode = "deepmerge"
+	// override
+	W1UserDataModeOverride W1UserDataMode = "override"
+)
 
 // __createFloatingGroupInput is used internally by genqlient
 type __createFloatingGroupInput struct {
@@ -125,14 +211,15 @@ func (v *__createFloatingIPInput) GetProjectId() string { return v.ProjectId }
 
 // __createInstanceInput is used internally by genqlient
 type __createInstanceInput struct {
-	NetworkId string           `json:"networkId"`
-	FlavorId  string           `json:"flavorId"`
-	ImageId   string           `json:"imageId"`
-	ProjectId string           `json:"projectId"`
-	Name      string           `json:"name"`
-	SshKeys   []string         `json:"sshKeys"`
-	Zone      AvailabilityZone `json:"zone"`
-	Managed   bool             `json:"managed"`
+	NetworkId  string                  `json:"networkId"`
+	FlavorId   string                  `json:"flavorId"`
+	ImageId    string                  `json:"imageId"`
+	ProjectId  string                  `json:"projectId"`
+	Name       string                  `json:"name"`
+	SshKeys    []string                `json:"sshKeys"`
+	Zone       AvailabilityZone        `json:"zone"`
+	Managed    bool                    `json:"managed"`
+	Additional InstanceAdditionalInput `json:"additional"`
 }
 
 // GetNetworkId returns __createInstanceInput.NetworkId, and is useful for accessing the field via an interface.
@@ -158,6 +245,9 @@ func (v *__createInstanceInput) GetZone() AvailabilityZone { return v.Zone }
 
 // GetManaged returns __createInstanceInput.Managed, and is useful for accessing the field via an interface.
 func (v *__createInstanceInput) GetManaged() bool { return v.Managed }
+
+// GetAdditional returns __createInstanceInput.Additional, and is useful for accessing the field via an interface.
+func (v *__createInstanceInput) GetAdditional() InstanceAdditionalInput { return v.Additional }
 
 // __createKeyInput is used internally by genqlient
 type __createKeyInput struct {
@@ -1744,8 +1834,8 @@ func createFloatingIP(
 
 // The query or mutation executed by createInstance.
 const createInstance_Operation = `
-mutation createInstance ($networkId: UUID!, $flavorId: UUID!, $imageId: UUID!, $projectId: UUID!, $name: String!, $sshKeys: [UUID!]!, $zone: AvailabilityZone!, $managed: Boolean!) {
-	createInstance(flavor: $flavorId, image: $imageId, name: $name, networks: [$networkId], sshKeys: $sshKeys, projectId: $projectId, zone: $zone, managed: $managed) {
+mutation createInstance ($networkId: UUID!, $flavorId: UUID!, $imageId: UUID!, $projectId: UUID!, $name: String!, $sshKeys: [UUID!]!, $zone: AvailabilityZone!, $managed: Boolean!, $additional: InstanceAdditionalInput) {
+	createInstance(flavor: $flavorId, image: $imageId, name: $name, networks: [$networkId], sshKeys: $sshKeys, projectId: $projectId, zone: $zone, managed: $managed, additional: $additional) {
 		code
 		err
 		msg {
@@ -1768,19 +1858,21 @@ func createInstance(
 	sshKeys []string,
 	zone AvailabilityZone,
 	managed bool,
+	additional InstanceAdditionalInput,
 ) (*createInstanceResponse, error) {
 	req_ := &graphql.Request{
 		OpName: "createInstance",
 		Query:  createInstance_Operation,
 		Variables: &__createInstanceInput{
-			NetworkId: networkId,
-			FlavorId:  flavorId,
-			ImageId:   imageId,
-			ProjectId: projectId,
-			Name:      name,
-			SshKeys:   sshKeys,
-			Zone:      zone,
-			Managed:   managed,
+			NetworkId:  networkId,
+			FlavorId:   flavorId,
+			ImageId:    imageId,
+			ProjectId:  projectId,
+			Name:       name,
+			SshKeys:    sshKeys,
+			Zone:       zone,
+			Managed:    managed,
+			Additional: additional,
 		},
 	}
 	var err_ error

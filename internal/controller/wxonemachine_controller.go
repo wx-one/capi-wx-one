@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -258,8 +259,17 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 			return ctrl.Result{}, errors.New("error retrieving bootstrap data: secret value key is missing")
 		}
 
+		var additional InstanceAdditionalInput
+		var userData UserDataInput
+
+		userData = UserDataInput{}
+		raw := json.RawMessage([]byte(string(secret.Data["value"])))
+		userData.Content = raw
+		userData.Mode = "override"
+		additional.UserData = userData
+
 		log.Info("creating instance")
-		instance, err := createInstance(ctx, wxOneClients.graphqlClient, wxOneCluster.Status.Network.SubnetReference.ResourceID, wxOneMachine.Status.Flavor.ResourceID, wxOneMachine.Status.Image.ResourceID, wxOneCluster.Status.Project.ResourceID, machine.Name, []string{wxOneCluster.Status.SSHKey.ResourceID}, AvailabilityZone(wxOneCluster.Spec.AvailabilityZone), false)
+		instance, err := createInstance(ctx, wxOneClients.graphqlClient, wxOneCluster.Status.Network.SubnetReference.ResourceID, wxOneMachine.Status.Flavor.ResourceID, wxOneMachine.Status.Image.ResourceID, wxOneCluster.Status.Project.ResourceID, machine.Name, []string{wxOneCluster.Status.SSHKey.ResourceID}, AvailabilityZone(wxOneCluster.Spec.AvailabilityZone), false, additional)
 		if err != nil {
 			log.Error(err, "Failed to create instance")
 			return ctrl.Result{}, err
