@@ -9,4 +9,4 @@ spec:
   flavor:
     name: 'dd1.medium'
   image:
-    name: local
+    name: ubuntu2004
