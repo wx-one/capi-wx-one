@@ -22,6 +22,14 @@ const (
 	AvailabilityZoneWxDus3 AvailabilityZone = "wx_dus_3"
 	// Public zone
 	AvailabilityZoneWxDus AvailabilityZone = "wx_dus"
+	// Internal zone for customer workloads
+	AvailabilityZoneWxBom1 AvailabilityZone = "wx_bom_1"
+	// Internal zone for customer workloads
+	AvailabilityZoneWxBom2 AvailabilityZone = "wx_bom_2"
+	// Internal zone for customer workloads
+	AvailabilityZoneWxBom3 AvailabilityZone = "wx_bom_3"
+	// Public zone
+	AvailabilityZoneWxBom AvailabilityZone = "wx_bom"
 	// Unknown zone
 	AvailabilityZoneUnknown AvailabilityZone = "UNKNOWN"
 )
@@ -1525,11 +1533,11 @@ func (v *getNetworkResponse) GetGetNetwork() getNetworkGetNetworkW1NetworkRespon
 	return v.GetNetwork
 }
 
-// meMeUser includes the requested fields of the GraphQL type User.
+// meMeUserInformation includes the requested fields of the GraphQL type UserInformation.
 // The GraphQL type's documentation follows.
 //
-// User
-type meMeUser struct {
+// User Information
+type meMeUserInformation struct {
 	// ID
 	Id string `json:"id"`
 	// Name
@@ -1538,23 +1546,23 @@ type meMeUser struct {
 	Role int `json:"role"`
 }
 
-// GetId returns meMeUser.Id, and is useful for accessing the field via an interface.
-func (v *meMeUser) GetId() string { return v.Id }
+// GetId returns meMeUserInformation.Id, and is useful for accessing the field via an interface.
+func (v *meMeUserInformation) GetId() string { return v.Id }
 
-// GetUsername returns meMeUser.Username, and is useful for accessing the field via an interface.
-func (v *meMeUser) GetUsername() string { return v.Username }
+// GetUsername returns meMeUserInformation.Username, and is useful for accessing the field via an interface.
+func (v *meMeUserInformation) GetUsername() string { return v.Username }
 
-// GetRole returns meMeUser.Role, and is useful for accessing the field via an interface.
-func (v *meMeUser) GetRole() int { return v.Role }
+// GetRole returns meMeUserInformation.Role, and is useful for accessing the field via an interface.
+func (v *meMeUserInformation) GetRole() int { return v.Role }
 
 // meResponse is returned by me on success.
 type meResponse struct {
 	// Get information about me
-	Me meMeUser `json:"me"`
+	Me meMeUserInformation `json:"me"`
 }
 
 // GetMe returns meResponse.Me, and is useful for accessing the field via an interface.
-func (v *meResponse) GetMe() meMeUser { return v.Me }
+func (v *meResponse) GetMe() meMeUserInformation { return v.Me }
 
 // updateKeyResponse is returned by updateKey on success.
 type updateKeyResponse struct {

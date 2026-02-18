@@ -79,6 +79,25 @@ enum AvailabilityZone {
   wx_dus_3
   "Public zone"
   wx_dus
+  "Internal zone for customer workloads"
+  wx_bom_1
+  "Internal zone for customer workloads"
+  wx_bom_2
+  "Internal zone for customer workloads"
+  wx_bom_3
+  "Public zone"
+  wx_bom
+
+  "Unknown zone"
+  UNKNOWN
+}
+
+"Region"
+enum RegionCode {
+  "Duesseldorf"
+  wx_dus
+  "Mumbai"
+  wx_bom
   "Unknown zone"
   UNKNOWN
 }
@@ -153,6 +172,8 @@ type User {
   organizationRole: Int
   "Project Role"
   projectRole: Int
+  "Role Assignments"
+  roleAssignments: [RoleAssignment!]!
 }
 
 "User List Response"
@@ -165,6 +186,16 @@ type UserListResponse {
   msg: [User]
   "Pagination"
   pagination: PaginationInfo
+}
+
+"User Response"
+type UserResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: User
 }
 
 "Image Type"
@@ -195,6 +226,8 @@ type W1Image {
   filename: String
   "Status of image"
   status: ImageStatus
+  "taskId (Custom Image only)"
+  taskId: UUID
 }
 
 "Image Response"
@@ -235,6 +268,8 @@ enum FlavorType {
   vs1
   "TBD"
   dd1
+  "TBD"
+  dd2
   "TBD"
   ha1
   "Unknown flavor type"
@@ -319,8 +354,8 @@ type Quota {
   count: Int!
   "Availability Zone"
   availabilityZone: AvailabilityZone
-  "Flavor ID"
-  flavorId: UUID
+  "Flavor Type"
+  flavorType: FlavorType
   "volumeType"
   volumeType: W1VolumeType
 }
@@ -333,6 +368,50 @@ input BootDiskInput {
   reprovision: Boolean!
 }
 
+"Volume Type"
+enum W1SevType {
+  "SEV"
+  sev
+  "SEV ES"
+  sev_es
+  "SEV SNP"
+  sev_snp
+  "SEV SNP with ephemeral SVSM vTPM, can be combined with a normal vTPM"
+  sev_snp_vtpm
+}
+
+"Sev Options Input"
+input SevOptionsInput {
+  "dhCert must be set together with session"
+  dhCert: String
+  "session"
+  session: String
+  "kernelHashes"
+  kernelHashes: String
+}
+
+"UserDataInput"
+input UserDataInput {
+  "content"
+  content: JSON!
+  "mode, either deepmerge (default) or override"
+  mode: W1UserDataMode
+}
+
+"Instance Additional Options"
+input InstanceAdditionalInput {
+  "provision VM with vTPM, ignored if not supported by VM type"
+  vTPM: Boolean
+  "use uefi bios, ignored if not supported by VM type"
+  uefi: Boolean
+  "specify the SEV type, ignored if not supported by VM type"
+  sevType: W1SevType
+  "sevOptions"
+  sevOptions: SevOptionsInput
+  "userData"
+  userData: UserDataInput
+}
+
 "Quota Input"
 input QuotaInput {
   "Type of quota"
@@ -343,8 +422,8 @@ input QuotaInput {
   count: Int!
   "Availability Zone"
   availabilityZone: AvailabilityZone
-  "Flavor ID"
-  flavorId: UUID
+  "Flavor Type"
+  flavorType: FlavorType
   "volumeType"
   volumeType: W1VolumeType
 }
@@ -379,6 +458,14 @@ type QuotaResponse {
   err: String
   "Success Message"
   msg: Quota
+}
+
+"UserDataMode"
+enum W1UserDataMode {
+  "deepmerge"
+  deepmerge
+  "override"
+  override
 }
 
 "Volume Type"
@@ -677,6 +764,38 @@ type ApiKeyResponse {
   msg: ApiKey
 }
 
+"Sev Options"
+type SevOptions {
+  "dhCert must be set together with session"
+  dhCert: String
+  "session"
+  session: String
+  "kernelHashes"
+  kernelHashes: String
+}
+
+"UserData"
+type UserData {
+  "content"
+  content: JSON!
+  "mode, either deepmerge (default) or override"
+  mode: W1UserDataMode
+}
+
+"Instance Additional Options"
+type InstanceAdditional {
+  "provision VM with vTPM, ignored if not supported by VM type"
+  vTPM: Boolean
+  "use uefi bios, ignored if not supported by VM type"
+  uefi: Boolean
+  "specify the SEV type, ignored if not supported by VM type"
+  sevType: W1SevType
+  "sevOptions"
+  sevOptions: SevOptions
+  "userData"
+  userData: UserData
+}
+
 "Instance"
 type W1Instance {
   "ID"
@@ -699,6 +818,8 @@ type W1Instance {
   volumes: [W1Volume]
   "Attached FloatingIPs"
   floatingIPs: [InstanceFloatingIPAttachment]
+  "Addtional Instance Options"
+  additional: InstanceAdditional
 }
 
 "Instance Response"
@@ -771,6 +892,8 @@ type W1VolumeListResponse {
   err: String
   "Success Message"
   msg: [W1Volume]
+  "Pagination Info"
+  pagination: PaginationInfo
 }
 
 "Volume Attachment Response"
@@ -843,6 +966,121 @@ enum InstanceStatus {
   UPDATING
   "Instance status is not known"
   UNKNOWN
+}
+
+"Organization"
+type Organization {
+  "id"
+  id: UUID
+  "Name"
+  name: String
+  "Address line 1"
+  addressLine1: String
+  "Address line 2"
+  addressLine2: String
+  "City"
+  city: String
+  "State / Province / Region"
+  stateProvinceRegion: String
+  "Zip Code"
+  zipCode: String
+  "Country"
+  country: String
+  "VAT Number"
+  vatNumber: String
+  "Commercial Register Number"
+  commercialRegisterNumber: String
+  "Register Court"
+  registerCourt: String
+  "GSTIN"
+  gstin: String
+  "CIN"
+  cin: String
+  "Bank Owner Name"
+  bankOwnerName: String
+  "IBAN"
+  iban: String
+  "BIC"
+  bic: String
+  "Bank Name"
+  bankName: String
+  "Bank Account Number"
+  bankAccountNumber: String
+  "IFSC Code"
+  ifscCode: String
+  "Swift Code"
+  swiftCode: String
+  "Aggree to sepa"
+  agreeSEPA: Boolean
+  "Existing Change Request"
+  changeRequest: OrganizationChangeRequest
+  "External Mandate"
+  extMandate: String
+  "Revolut Customer ID"
+  revolutCustomerId: String
+  "Revolut Customer Card"
+  revolutCustomerCard: RevolutCard
+}
+
+"Role"
+type Role {
+  id: UUID
+  name: String
+  description: String
+  contexts: [String!]!
+  policies: [Policy!]!
+}
+
+"Role Assignment"
+type RoleAssignment {
+  id: UUID
+  principalType: String
+  principalId: UUID
+  roleId: UUID
+  contexts: JSON
+}
+
+"Policy"
+type Policy {
+  id: UUID
+  name: String
+  description: String
+  effect: PolicyEffect
+  actions: [String]
+  notActions: [String]
+  resources: [String]
+  notResources: [String]
+  conditions: JSON
+}
+
+"Policy Effect"
+enum PolicyEffect {
+  ALLOW
+  DENY
+}
+
+"Organization Change Request"
+type OrganizationChangeRequest {
+  "Bank Owner Name"
+  bankOwnerName: String
+  "IBAN"
+  iban: String
+  "BIC"
+  bic: String
+  "Bank Name"
+  bankName: String
+  "Bank Account Number"
+  bankAccountNumber: String
+  "IFSC Code"
+  ifscCode: String
+  "SWIFT Code"
+  swiftCode: String
+  "Commercial Register Number"
+  commercialRegisterNumber: String
+  "Register Court"
+  registerCourt: String
+  "VAT Number"
+  vatNumber: String
 }
 
 "Floating IP"
@@ -987,6 +1225,16 @@ enum SecurityGroupRuleDirection {
   egress
 }
 
+"Security Group Rule Action"
+enum SecurityGroupRuleAction {
+  "accept"
+  accept
+  "drop"
+  drop
+  "reject"
+  reject
+}
+
 "Ethernet Type"
 enum EtherType {
   "IP version 4"
@@ -1003,6 +1251,10 @@ enum Protocol {
   udp
   "ICMP"
   icmp
+  "use protocol int"
+  int
+  "any"
+  any
 }
 
 "Health Check Protocol"
@@ -1043,16 +1295,16 @@ type W1SecurityGroupRule {
   etherType: EtherType!
   "Priority"
   priority: Int!
-  "Minimum port in range"
-  portRangeMin: Int!
-  "Maximum port in range"
-  portRangeMax: Int!
+  "Port List, either single, all, comma separated or a range 1:256"
+  ports: String!
   "Protocol"
   protocol: Protocol!
-  "Source IP/CIDR"
-  source: String!
-  "Destination IP/CIDR"
-  destination: String!
+  "protocol Integer alternative"
+  protocolInt: Int
+  "IP/CIDR"
+  cidr: String!
+  "action"
+  action: SecurityGroupRuleAction
 }
 
 "Security Group Association"
@@ -1077,16 +1329,16 @@ input W1SecurityGroupRuleInput {
   etherType: EtherType!
   "Priority"
   priority: Int!
-  "Minimum port in range"
-  portRangeMin: Int!
-  "Maximum port in range"
-  portRangeMax: Int!
+  "Port List, either single, all, comma separated or a range 1:256"
+  ports: String!
   "Protocol"
   protocol: Protocol!
-  "Source IP/CIDR"
-  source: String!
-  "Destination IP/CIDR"
-  destination: String!
+  "protocol Integer alternative"
+  protocolInt: Int
+  "IP/CIDR"
+  cidr: String!
+  "action"
+  action: SecurityGroupRuleAction
 }
 
 "Security Group Response"
@@ -1401,84 +1653,6 @@ type ProfileResponse {
   msg: Profile
 }
 
-"Organization Change Request"
-type OrganizationChangeRequest {
-  "Bank Owner Name"
-  bankOwnerName: String
-  "IBAN"
-  iban: String
-  "BIC"
-  bic: String
-  "Bank Name"
-  bankName: String
-  "Bank Account Number"
-  bankAccountNumber: String
-  "IFSC Code"
-  ifscCode: String
-  "SWIFT Code"
-  swiftCode: String
-  "Commercial Register Number"
-  commercialRegisterNumber: String
-  "Register Court"
-  registerCourt: String
-  "VAT Number"
-  vatNumber: String
-}
-
-"Organization"
-type Organization {
-  "id"
-  id: UUID
-  "Name"
-  name: String
-  "Address line 1"
-  addressLine1: String
-  "Address line 2"
-  addressLine2: String
-  "City"
-  city: String
-  "State / Province / Region"
-  stateProvinceRegion: String
-  "Zip Code"
-  zipCode: String
-  "Country"
-  country: String
-  "VAT Number"
-  vatNumber: String
-  "Commercial Register Number"
-  commercialRegisterNumber: String
-  "Register Court"
-  registerCourt: String
-  "GSTIN"
-  gstin: String
-  "CIN"
-  cin: String
-  "Bank Owner Name"
-  bankOwnerName: String
-  "IBAN"
-  iban: String
-  "BIC"
-  bic: String
-  "Bank Name"
-  bankName: String
-  "Bank Account Number"
-  bankAccountNumber: String
-  "IFSC Code"
-  ifscCode: String
-  "Swift Code"
-  swiftCode: String
-  "Aggree to sepa"
-  agreeSEPA: Boolean
-  "Existing Change Request"
-  changeRequest: OrganizationChangeRequest
-  "External Mandate"
-  extMandate: String
-  "Revolut Customer ID"
-  revolutCustomerId: String
-  "Revolut Customer Card"
-  revolutCustomerCard: RevolutCard
-}
-
 "Organization Response"
 type OrganizationResponse {
   "Return Code"
@@ -1491,8 +1665,32 @@ type OrganizationResponse {
 
 "Project Access"
 type ProjectAccess {
-  "Role"
-  role: Int
+  canCreateApiKeys: Boolean
+  canDeleteAPIKeys: Boolean
+  canCreateFloatingIPs: Boolean
+  canAttachFloatingIPs: Boolean
+  canDetachFloatingIPs: Boolean
+  canDeleteFloatingIPs: Boolean
+  canDeleteCustomImages: Boolean
+  canConnectToVNC: Boolean
+  canCreateInstances: Boolean
+  canStartInstance: Boolean
+  canRebootInstance: Boolean
+  canStopInstance: Boolean
+  canAttachVolumes: Boolean
+  canDetachVolumes: Boolean
+  canDeleteVolumes: Boolean
+  canHardRebootInstance: Boolean
+  canForceShutdownInstance: Boolean
+  canDeleteInstance: Boolean
+  canCreateNetworks: Boolean
+  canDeleteNetworks: Boolean
+  canInstallSoftware: Boolean
+  canEditInstalledSoftware: Boolean
+  canUninstallSoftware: Boolean
+  canCreateImages: Boolean
+  canAddVolumes: Boolean
+  canInviteUsers: Boolean
 }
 
 "Project Access Response"
@@ -1502,7 +1700,7 @@ type ProjectAccessResponse {
   "Error Message"
   err: String
   "Success Message"
-  msg: ProjectAccess
+  msg: JSON
 }
 
 "Organization Access"
@@ -1518,7 +1716,7 @@ type OrganizationAccessResponse {
   "Error Message"
   err: String
   "Success Message"
-  msg: OrganizationAccess
+  msg: JSON
 }
 
 "Pricing List Response"
@@ -1531,9 +1729,225 @@ type PricingListResponse {
   msg: JSON
 }
 
+"Policy List Response"
+type PolicyListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [Policy]
+}
+
+"Policy Response"
+type PolicyResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: Policy
+}
+
+"Policy Document Input"
+input PolicyDocumentInput {
+  name: String!
+  description: String
+  effect: PolicyEffect!
+  actions: [String!]!
+  notActions: [String!] = []
+  resources: [String!]!
+  notResources: [String!] = []
+  conditions: JSON = {}
+}
+
+"Policy Principal Type"
+enum PolicyPrincipalType {
+  USER
+  GROUP
+}
+
+"Role List Response"
+type RoleListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [Role!]!
+  "Pagination Info"
+  pagination: PaginationInfo
+}
+
+"Role Response"
+type RoleResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: Role
+}
+
+"S3 User"
+type S3User {
+  "ID"
+  id: UUID
+  "Name"
+  name: String
+  "AccessKey"
+  accessKey: String
+  "Secret Key"
+  secretKey: String
+}
+
+"S3 User Response"
+type S3UserResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: S3User
+}
+
+"S3 User List Response"
+type S3UserListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [S3User]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+"S3 Policy Response"
+type S3PolicyResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: JSON
+}
+
+"S3 Bucket"
+type S3Bucket {
+  "ID"
+  id: UUID
+  "Name"
+  name: String
+}
+
+"S3 Bucket Response"
+type S3BucketResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: S3Bucket
+}
+
+"S3 Bucket List Response"
+type S3BucketListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [S3Bucket]
+  "Pagination"
+  pagination: PaginationInfo
+}
+
+"S3 Access Key"
+type S3AccessKey {
+  "ID"
+  id: String
+  "Secret Key"
+  secretKey: String
+  "Status"
+  status: String
+}
+
+"S3 Access Key Response"
+type S3AccessKeyResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: S3AccessKey
+}
+
+"S3 Access Key List Response"
+type S3AccessKeyListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [S3AccessKey]
+}
+
+"User Information"
+type UserInformation {
+  "ID"
+  id: UUID!
+  "Name"
+  username: Email!
+  "Role"
+  role: Int
+  "Organization Id"
+  organizationId: UUID
+  "Organization Role"
+  organizationRole: Int
+  "Organization Country"
+  organizationCountry: String
+  "User ID (if API Key)"
+  userId: UUID
+  "Expired (if API Key)"
+  expired: Boolean
+}
+
+"Region"
+type Region {
+  "ID"
+  id: String
+  "Label"
+  label: String
+  "API Base URL"
+  apiBaseUrl: String
+  "Primary Region"
+  isPrimaryRegion: Boolean
+}
+
+"Region Response"
+type RegionResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: Region
+}
+
+"Region List Response"
+type RegionListResponse {
+  "Return Code"
+  code: Int!
+  "Error Message"
+  err: String
+  "Success Message"
+  msg: [Region]
+}
+
 type Query {
   "Get information about me"
-  me: User
+  me: UserInformation
   "Get information about my project access to the current proejct"
   getProjectAccess("ID of Project" projectId: UUID!): ProjectAccessResponse
   "Get information about my organization access to my organization"
@@ -1561,6 +1975,16 @@ type Query {
     "ID of Project"
     projectId: UUID!
   ): W1InstanceResponse
+  "Get Network List for region"
+  getNetworkListForRegion(
+    "enum of Zone"
+    region: RegionCode
+    "ID of Project"
+    projectId: UUID!
+    "Pagination"
+    pagination: PaginationInput
+  ): W1NetworkListResponse
+
   "Get Network List"
   getNetworkList(
     "ID of Zone"
@@ -1593,6 +2017,8 @@ type Query {
     projectId: UUID!
     "If true or false filter only for attached or non attached Volumes"
     attached: Boolean
+    "Pagination"
+    pagination: PaginationInput
   ): W1VolumeListResponse
   "Get Volume Attachment"
   getVolumeAttachment(
@@ -1684,7 +2110,12 @@ type Query {
     pagination: PaginationInput
   ): QuotaListResponse
   "Get Quota"
-  getQuota("ID of Quota" id: UUID!): QuotaResponse
+  getQuota(
+    "ID of Quota"
+    id: UUID!
+    "Project ID"
+    projectId: UUID!
+  ): QuotaResponse
   "Get Forecast Billing"
   getForecastBilling(
     "projectId"
@@ -1698,13 +2129,8 @@ type Query {
     "pagination"
     pagination: PaginationInput
   ): BillListResponse
-  "Get Project Access List"
-  getProjectAccessUserList(
-    "projectId"
-    projectId: UUID!
-    "pagination"
-    pagination: PaginationInput
-  ): UserListResponse
+  "Get User List"
+  getUserList("pagination" pagination: PaginationInput): UserListResponse
   "Get Software List"
   getSoftwareList(
     "category"
@@ -1742,6 +2168,65 @@ type Query {
   getRevolutOrderList: RevolutOrderListResponse
   "Get revolut customer card"
   getRevolutCustomerCard: RevolutCardResponse
+  "Get Policy"
+  getPolicy(
+    "ID"
+    id: UUID!
+    "Principal Type"
+    principalType: PolicyPrincipalType!
+    "ID of principal"
+    principalId: UUID!
+  ): PolicyResponse
+  "List User Policies"
+  getPolicyList(
+    "Principal Type"
+    principalType: PolicyPrincipalType!
+    "ID of principal"
+    principalId: UUID!
+  ): PolicyListResponse
+  "Get Role Templates"
+  getRoleTemplateList(
+    "Project Id"
+    projectId: UUID!
+    "User Id"
+    userId: String!
+  ): RoleListResponse
+  "Get Roles"
+  getRoleList(pagination: PaginationInput!): RoleListResponse
+  "Get User"
+  getUser("User Id" id: String!, "Project Id" projectId: UUID!): UserResponse
+  "Get Role"
+  getRole(id: UUID!): RoleResponse
+  "Get S3 Policy"
+  getS3Policy(
+    "projectId"
+    projectId: UUID!
+    "User id"
+    userId: String!
+  ): S3PolicyResponse
+  "Get S3 Users List"
+  getS3UserList(
+    "projectId"
+    projectId: UUID!
+    "pagination"
+    pagination: PaginationInput
+  ): S3UserListResponse
+  "Get S3 Bucket List"
+  getS3BucketList(
+    "projectId"
+    projectId: UUID!
+    "pagination"
+    pagination: PaginationInput
+  ): S3BucketListResponse
+  "Get S3 Access Key List"
+  getS3AccessKeyList(
+    "projectId"
+    projectId: UUID!
+    "User Id"
+    userId: UUID!
+  ): S3AccessKeyListResponse
+  "Get Regions"
+  getRegionList: RegionListResponse
 }
 
 type Mutation {
@@ -1756,10 +2241,15 @@ type Mutation {
     "Filename"
     filename: String!
   ): W1ImageResponse
+  "Activate Custom Imgae Task"
+  activateCustomImageTask(
+    "ID of Project"
+    projectId: UUID!
+    "id"
+    customImageId: UUID!
+  ): W1ImageResponse
   "Delete Custom Image"
   deleteCustomImage("ID" id: UUID!, "ID of Project" projectId: UUID!): Response
-  "Update User"
-  updateUser("Username" username: Email!): Boolean
   "TBD"
   twoFactor("TBD" auth: UUID!, "TBD" payload: JSON): Boolean
   "Update Instance Status"
@@ -1852,6 +2342,19 @@ type Mutation {
     "ID of Instance"
     instanceId: UUID!
   ): Response
+  "Update a Security Group"
+  setSecurityGroup(
+    "id"
+    id: UUID!
+    "Name"
+    name: String!
+    "Description"
+    description: String
+    "ID of Proejct"
+    projectId: UUID!
+    "Rules"
+    rules: [W1SecurityGroupRuleInput]
+  ): W1SecurityGroupResponse
   "Create Security Group"
   createSecurityGroup(
     "Name"
@@ -1973,6 +2476,8 @@ type Mutation {
     sshKeys: [UUID!]
     "Make the boot disk an external one"
     bootDisk: BootDiskInput
+    "Additional Options"
+    additional: InstanceAdditionalInput
   ): W1InstanceResponse
   "Start Instance"
   startInstance(
@@ -2192,8 +2697,8 @@ type Mutation {
     email: String!
     "Project ID"
     projectId: UUID!
-    "Project Role"
-    projectRole: Int!
+    "Role Template IDs"
+    roleTemplateIds: [UUID!]!
   ): Response
   "Install Demo"
   installDemo("app" app: String!): Response
@@ -2239,6 +2744,129 @@ type Mutation {
   prepareRevolutCustomerCardSetup: RevolutOrderResponse
   "Delete revolut customer card"
   deleteRevolutCustomerCard: Response
+  "Request Quota"
+  requestQuota(
+    "ID of Quota"
+    id: UUID!
+    "Project ID"
+    projectId: UUID!
+    "Count"
+    count: Int!
+  ): Response
+  "Create Policies"
+  createPolicies(
+    "Principal Type"
+    principalType: PolicyPrincipalType!
+    "ID of principal"
+    principalId: UUID!
+    "policies"
+    policies: [PolicyDocumentInput!]!
+  ): Response
+  "Activate Task"
+  activateTask("ID" id: UUID!, "ID of project" projectId: UUID!): Response
+  deletePolicy(
+    "ID"
+    id: UUID!
+    "Principal Type"
+    principalType: PolicyPrincipalType!
+    "ID of principal"
+    principalId: UUID!
+  ): Response
+  "Update User"
+  updateUser(
+    "ID"
+    id: UUID!
+    "Project ID"
+    projectId: UUID!
+    "Role Template IDs"
+    roleTemplateIds: [UUID!]!
+  ): Response
+  "Create Role"
+  createRole(
+    "Name"
+    name: String!
+    "Description"
+    description: String
+    "Policies"
+    policies: [PolicyDocumentInput!]!
+  ): Response
+  "Update Role"
+  updateRole(
+    "id"
+    id: UUID!
+    "Name"
+    name: String!
+    "Description"
+    description: String
+    "Policies"
+    policies: [PolicyDocumentInput!]!
+  ): Response
+  "Delete Role"
+  deleteRole("id" id: UUID!): Response
+  "Create S3 Bucket"
+  createS3Bucket(
+    "name"
+    name: String!
+    "Enable versioning?"
+    enableVersioning: Boolean
+    "Enable object lock?"
+    enableObjectLock: Boolean
+    "Object Lock Mode"
+    objectLockMode: String
+    "Set Default Retention"
+    setDefaultRetention: Boolean
+    "Default Retention"
+    defaultRetention: Int
+    "projectId"
+    projectId: UUID!
+  ): S3BucketResponse
+  "Create S3 User and AccessKey"
+  createS3User(
+    "name"
+    name: String!
+    "projectId"
+    projectId: UUID!
+  ): S3UserResponse
+  "Create S3 Policy"
+  createS3Policy(
+    "projectId"
+    projectId: UUID!
+    "User id"
+    userId: UUID!
+    "policy"
+    policy: JSON
+  ): Response
+  "Update S3 Policy"
+  updateS3Policy(
+    "projectId"
+    projectId: UUID!
+    "User id"
+    userId: UUID!
+    "policy"
+    policy: JSON
+  ): Response
+  "Delete S3 Bucket"
+  deleteS3Bucket("ID" id: UUID!, "projectId" projectId: UUID!): Response
+  "Delete S3 User"
+  deleteS3User("id" id: UUID!, "projectId" projectId: UUID!): Response
+  "Create S3 AccessKey"
+  createS3AccessKey(
+    "user id"
+    userId: UUID!
+    "projectId"
+    projectId: UUID!
+  ): S3AccessKeyResponse
+  "Delete S3 AccessKey"
+  deleteS3AccessKey(
+    "ID of access key"
+    id: String!
+    "User ID"
+    userId: UUID!
+    "projectId"
+    projectId: UUID!
+  ): Response
+  "Switch Region"
+  switchRegion("ID of region" id: String!): RegionResponse
 }
 
 schema {
