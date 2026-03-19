@@ -6,4 +6,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: registry-1.docker.io/wzrdtales/cluster-api-provider-wxone
-  newTag: v1.0.1
+  newTag: v1.0.2
