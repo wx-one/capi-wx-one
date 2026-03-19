@@ -2634,7 +2634,18 @@ type Mutation {
     vms: [FloatingGroupVmInput]
     "Nat to VMs private IP"
     natToVmsPrivateIp: Boolean
+    "attach to existing group if exists"
+    attach: Boolean
   ): FloatingGroupResponse
+  "Detach from Floating Group"
+  detachFloatingGroup(
+    "ID of FloatingIP"
+    id: UUID!
+    "ID of Project"
+    projectId: UUID!
+    "Instances for Floating Group"
+    vms: [UUID!]!
+  ): Response
   "Delete Floating Group"
   deleteFloatingGroupById(
     "ID"

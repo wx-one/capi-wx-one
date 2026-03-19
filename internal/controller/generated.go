@@ -225,6 +225,7 @@ type __createFloatingGroupInput struct {
 	ProjectId         string                  `json:"projectId"`
 	Vms               []*FloatingGroupVmInput `json:"vms,omitempty"`
 	NatToVmsPrivateIp *bool                   `json:"natToVmsPrivateIp,omitempty"`
+	Attach            *bool                   `json:"attach,omitempty"`
 }
 
 // GetId returns __createFloatingGroupInput.Id, and is useful for accessing the field via an interface.
@@ -238,6 +239,9 @@ func (v *__createFloatingGroupInput) GetVms() []*FloatingGroupVmInput { return v
 
 // GetNatToVmsPrivateIp returns __createFloatingGroupInput.NatToVmsPrivateIp, and is useful for accessing the field via an interface.
 func (v *__createFloatingGroupInput) GetNatToVmsPrivateIp() *bool { return v.NatToVmsPrivateIp }
+
+// GetAttach returns __createFloatingGroupInput.Attach, and is useful for accessing the field via an interface.
+func (v *__createFloatingGroupInput) GetAttach() *bool { return v.Attach }
 
 // __createFloatingIPInput is used internally by genqlient
 type __createFloatingIPInput struct {
@@ -818,11 +822,11 @@ func (v *createNetworkResponse) GetCreateNetwork() *createNetworkCreateNetworkW1
 	return v.CreateNetwork
 }
 
-// deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse includes the requested fields of the GraphQL type Response.
+// deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse includes the requested fields of the GraphQL type Response.
 // The GraphQL type's documentation follows.
 //
 // Response
-type deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse struct {
+type deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse struct {
 	// Error Message
 	Err *string `json:"err"`
 	// Return Code
@@ -831,30 +835,30 @@ type deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloating
 	Msg *string `json:"msg"`
 }
 
-// GetErr returns deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse.Err, and is useful for accessing the field via an interface.
-func (v *deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse) GetErr() *string {
+// GetErr returns deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse.Err, and is useful for accessing the field via an interface.
+func (v *deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse) GetErr() *string {
 	return v.Err
 }
 
-// GetCode returns deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse.Code, and is useful for accessing the field via an interface.
-func (v *deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse) GetCode() int {
+// GetCode returns deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse.Code, and is useful for accessing the field via an interface.
+func (v *deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse) GetCode() int {
 	return v.Code
 }
 
-// GetMsg returns deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse.Msg, and is useful for accessing the field via an interface.
-func (v *deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse) GetMsg() *string {
+// GetMsg returns deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse.Msg, and is useful for accessing the field via an interface.
+func (v *deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse) GetMsg() *string {
 	return v.Msg
 }
 
 // deleteFloatingGroupByFloatingIpIdAndInstanceIdResponse is returned by deleteFloatingGroupByFloatingIpIdAndInstanceId on success.
 type deleteFloatingGroupByFloatingIpIdAndInstanceIdResponse struct {
-	// Delete Floating Group by Ip and Instance ID
-	DeleteFloatingGroupByFloatingIpIdAndInstanceId *deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse `json:"deleteFloatingGroupByFloatingIpIdAndInstanceId"`
+	// Detach from Floating Group
+	DetachFloatingGroup *deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse `json:"detachFloatingGroup"`
 }
 
-// GetDeleteFloatingGroupByFloatingIpIdAndInstanceId returns deleteFloatingGroupByFloatingIpIdAndInstanceIdResponse.DeleteFloatingGroupByFloatingIpIdAndInstanceId, and is useful for accessing the field via an interface.
-func (v *deleteFloatingGroupByFloatingIpIdAndInstanceIdResponse) GetDeleteFloatingGroupByFloatingIpIdAndInstanceId() *deleteFloatingGroupByFloatingIpIdAndInstanceIdDeleteFloatingGroupByFloatingIpIdAndInstanceIdResponse {
-	return v.DeleteFloatingGroupByFloatingIpIdAndInstanceId
+// GetDetachFloatingGroup returns deleteFloatingGroupByFloatingIpIdAndInstanceIdResponse.DetachFloatingGroup, and is useful for accessing the field via an interface.
+func (v *deleteFloatingGroupByFloatingIpIdAndInstanceIdResponse) GetDetachFloatingGroup() *deleteFloatingGroupByFloatingIpIdAndInstanceIdDetachFloatingGroupResponse {
+	return v.DetachFloatingGroup
 }
 
 // deleteFloatingIPDeleteFloatingIPResponse includes the requested fields of the GraphQL type Response.
@@ -1369,10 +1373,218 @@ func (v *getFloatingIPGetFloatingIPFloatingIPResponse) GetMsg() *getFloatingIPGe
 type getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP struct {
 	// Public IP
 	Ip string `json:"ip"`
+	// Attachment
+	AttachedTo *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment `json:"-"`
 }
 
 // GetIp returns getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP.Ip, and is useful for accessing the field via an interface.
 func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP) GetIp() string { return v.Ip }
+
+// GetAttachedTo returns getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP.AttachedTo, and is useful for accessing the field via an interface.
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP) GetAttachedTo() *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment {
+	return v.AttachedTo
+}
+
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP
+		AttachedTo json.RawMessage `json:"attachedTo"`
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	{
+		dst := &v.AttachedTo
+		src := firstPass.AttachedTo
+		if len(src) != 0 && string(src) != "null" {
+			*dst = new(getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment)
+			err = __unmarshalgetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment(
+				src, *dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP.AttachedTo: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
+type __premarshalgetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP struct {
+	Ip string `json:"ip"`
+
+	AttachedTo json.RawMessage `json:"attachedTo"`
+}
+
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP) __premarshalJSON() (*__premarshalgetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP, error) {
+	var retval __premarshalgetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP
+
+	retval.Ip = v.Ip
+	{
+
+		dst := &retval.AttachedTo
+		src := v.AttachedTo
+		if src != nil {
+			var err error
+			*dst, err = __marshalgetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment(
+				src)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"unable to marshal getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIP.AttachedTo: %w", err)
+			}
+		}
+	}
+	return &retval, nil
+}
+
+// getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment includes the requested fields of the GraphQL interface FloatingIPAttachment.
+//
+// getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment is implemented by the following types:
+// getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment
+// getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToLoadBalancerFrontendIP
+// The GraphQL type's documentation follows.
+//
+// Floating IP Attachment can be either an vm or loadbalancer frontend ip
+type getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment interface {
+	implementsGraphQLInterfacegetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment()
+	// GetTypename returns the receiver's concrete GraphQL type-name (see interface doc for possible values).
+	GetTypename() *string
+}
+
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment) implementsGraphQLInterfacegetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment() {
+}
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToLoadBalancerFrontendIP) implementsGraphQLInterfacegetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment() {
+}
+
+func __unmarshalgetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment(b []byte, v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment) error {
+	if string(b) == "null" {
+		return nil
+	}
+
+	var tn struct {
+		TypeName string `json:"__typename"`
+	}
+	err := json.Unmarshal(b, &tn)
+	if err != nil {
+		return err
+	}
+
+	switch tn.TypeName {
+	case "FloatingIPInstanceAttachment":
+		*v = new(getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment)
+		return json.Unmarshal(b, *v)
+	case "LoadBalancerFrontendIP":
+		*v = new(getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToLoadBalancerFrontendIP)
+		return json.Unmarshal(b, *v)
+	case "":
+		return fmt.Errorf(
+			"response was missing FloatingIPAttachment.__typename")
+	default:
+		return fmt.Errorf(
+			`unexpected concrete type for getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment: "%v"`, tn.TypeName)
+	}
+}
+
+func __marshalgetFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment(v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment) ([]byte, error) {
+
+	var typename string
+	switch v := (*v).(type) {
+	case *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment:
+		typename = "FloatingIPInstanceAttachment"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment
+		}{typename, v}
+		return json.Marshal(result)
+	case *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToLoadBalancerFrontendIP:
+		typename = "LoadBalancerFrontendIP"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToLoadBalancerFrontendIP
+		}{typename, v}
+		return json.Marshal(result)
+	case nil:
+		return []byte("null"), nil
+	default:
+		return nil, fmt.Errorf(
+			`unexpected concrete type for getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPAttachment: "%T"`, v)
+	}
+}
+
+// getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment includes the requested fields of the GraphQL type FloatingIPInstanceAttachment.
+// The GraphQL type's documentation follows.
+//
+// Floating IP Instance Attachment
+type getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment struct {
+	Typename *string `json:"__typename"`
+	// Nat to VMs private IP
+	NatToVmsPrivateIp *bool                                                                                                                     `json:"natToVmsPrivateIp"`
+	Vms               []*getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachmentVmsFloatingIPInstance `json:"vms"`
+}
+
+// GetTypename returns getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment.Typename, and is useful for accessing the field via an interface.
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment) GetTypename() *string {
+	return v.Typename
+}
+
+// GetNatToVmsPrivateIp returns getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment.NatToVmsPrivateIp, and is useful for accessing the field via an interface.
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment) GetNatToVmsPrivateIp() *bool {
+	return v.NatToVmsPrivateIp
+}
+
+// GetVms returns getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment.Vms, and is useful for accessing the field via an interface.
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachment) GetVms() []*getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachmentVmsFloatingIPInstance {
+	return v.Vms
+}
+
+// getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachmentVmsFloatingIPInstance includes the requested fields of the GraphQL type FloatingIPInstance.
+type getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachmentVmsFloatingIPInstance struct {
+	// ID
+	Id   string `json:"id"`
+	VmId string `json:"vmId"`
+}
+
+// GetId returns getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachmentVmsFloatingIPInstance.Id, and is useful for accessing the field via an interface.
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachmentVmsFloatingIPInstance) GetId() string {
+	return v.Id
+}
+
+// GetVmId returns getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachmentVmsFloatingIPInstance.VmId, and is useful for accessing the field via an interface.
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToFloatingIPInstanceAttachmentVmsFloatingIPInstance) GetVmId() string {
+	return v.VmId
+}
+
+// getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToLoadBalancerFrontendIP includes the requested fields of the GraphQL type LoadBalancerFrontendIP.
+// The GraphQL type's documentation follows.
+//
+// Loadbalancer Frontend IP
+type getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToLoadBalancerFrontendIP struct {
+	Typename *string `json:"__typename"`
+}
+
+// GetTypename returns getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToLoadBalancerFrontendIP.Typename, and is useful for accessing the field via an interface.
+func (v *getFloatingIPGetFloatingIPFloatingIPResponseMsgW1FloatingIPAttachedToLoadBalancerFrontendIP) GetTypename() *string {
+	return v.Typename
+}
 
 // getFloatingIPResponse is returned by getFloatingIP on success.
 type getFloatingIPResponse struct {
@@ -1791,8 +2003,8 @@ func (v *updateNetworkUpdateNetworkW1NetworkResponseMsgW1Network) GetId() string
 
 // The mutation executed by createFloatingGroup.
 const createFloatingGroup_Operation = `
-mutation createFloatingGroup ($id: UUID!, $projectId: UUID!, $vms: [FloatingGroupVmInput], $natToVmsPrivateIp: Boolean) {
-	createFloatingGroup(id: $id, projectId: $projectId, vms: $vms, natToVmsPrivateIp: $natToVmsPrivateIp) {
+mutation createFloatingGroup ($id: UUID!, $projectId: UUID!, $vms: [FloatingGroupVmInput], $natToVmsPrivateIp: Boolean, $attach: Boolean) {
+	createFloatingGroup(id: $id, projectId: $projectId, vms: $vms, natToVmsPrivateIp: $natToVmsPrivateIp, attach: $attach) {
 		code
 		err
 		msg {
@@ -1810,6 +2022,7 @@ func createFloatingGroup(
 	projectId string,
 	vms []*FloatingGroupVmInput,
 	natToVmsPrivateIp *bool,
+	attach *bool,
 ) (data_ *createFloatingGroupResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "createFloatingGroup",
@@ -1819,6 +2032,7 @@ func createFloatingGroup(
 			ProjectId:         projectId,
 			Vms:               vms,
 			NatToVmsPrivateIp: natToVmsPrivateIp,
+			Attach:            attach,
 		},
 	}
 
@@ -2026,7 +2240,7 @@ func createNetwork(
 // The mutation executed by deleteFloatingGroupByFloatingIpIdAndInstanceId.
 const deleteFloatingGroupByFloatingIpIdAndInstanceId_Operation = `
 mutation deleteFloatingGroupByFloatingIpIdAndInstanceId ($projectId: UUID!, $floatingIPId: UUID!, $instanceId: UUID!) {
-	deleteFloatingGroupByFloatingIpIdAndInstanceId(projectId: $projectId, floatingIpId: $floatingIPId, instanceId: $instanceId) {
+	detachFloatingGroup(id: $floatingIPId, projectId: $projectId, vms: [$instanceId]) {
 		err
 		code
 		msg
@@ -2296,6 +2510,16 @@ query getFloatingIP ($id: UUID!, $projectId: UUID!) {
 		err
 		msg {
 			ip
+			attachedTo {
+				__typename
+				... on FloatingIPInstanceAttachment {
+					natToVmsPrivateIp
+					vms {
+						id
+						vmId
+					}
+				}
+			}
 		}
 	}
 }

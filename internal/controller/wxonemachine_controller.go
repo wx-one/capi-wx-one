@@ -181,6 +181,77 @@ func (r *WXOneMachineReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	return res, err
 }
 
+func addPersistentLoAddressToCloudInit(data []byte, addr string) (json.RawMessage, error) {
+	raw, err := cloudInitYAMLToJSON(data)
+	if err != nil {
+		return nil, err
+	}
+
+	var cfg map[string]interface{}
+	if err := json.Unmarshal(raw, &cfg); err != nil {
+		return nil, err
+	}
+
+	scriptContent := fmt.Sprintf(`#!/bin/sh
+ip addr show dev lo | grep -q '%[1]s' || ip addr add %[1]s/32 dev lo
+`, addr)
+
+	unitContent := `[Unit]
+Description=Add persistent loopback address
+After=network-pre.target
+Wants=network-pre.target
+Before=kubelet.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/configure-lo.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+`
+
+	writeFiles, ok := cfg["write_files"].([]interface{})
+	if !ok {
+		writeFiles = []interface{}{}
+	}
+
+	writeFiles = append(writeFiles,
+		map[string]interface{}{
+			"path":        "/usr/local/bin/configure-lo.sh",
+			"permissions": "0755",
+			"owner":       "root:root",
+			"content":     scriptContent,
+		},
+		map[string]interface{}{
+			"path":        "/etc/systemd/system/configure-lo.service",
+			"permissions": "0644",
+			"owner":       "root:root",
+			"content":     unitContent,
+		},
+	)
+	cfg["write_files"] = writeFiles
+
+	runcmd, ok := cfg["runcmd"].([]interface{})
+	if !ok {
+		runcmd = []interface{}{}
+	}
+
+	runcmd = append(runcmd,
+		[]interface{}{"systemctl", "daemon-reload"},
+		[]interface{}{"systemctl", "enable", "configure-lo.service"},
+		[]interface{}{"systemctl", "start", "configure-lo.service"},
+	)
+	cfg["runcmd"] = runcmd
+
+	updatedJSON, err := json.Marshal(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.RawMessage(updatedJSON), nil
+}
+
 func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *clusterv1.Cluster, wxOneCluster *infrav1.WXOneCluster, machine *clusterv1.Machine, wxOneMachine *infrav1.WXOneMachine) (res ctrl.Result, retErr error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("starting reconcile normal")
@@ -296,6 +367,14 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 		}
 
 		var additional InstanceAdditionalInput
+		if util.IsControlPlaneMachine(machine) {
+
+			updated, err := addPersistentLoAddressToCloudInit(secret.Data["value"], wxOneCluster.Status.FloatingIP.IP)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+			secret.Data["value"] = updated
+		}
 		raw, err := cloudInitYAMLToJSON(secret.Data["value"])
 		if err != nil {
 			return ctrl.Result{}, err
@@ -341,7 +420,7 @@ func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *c
 				Vm:       wxOneMachine.Status.Instance.ResourceID},
 		}
 
-		floatingIPAttachement, err := createFloatingGroup(ctx, wxOneClients.graphqlClient, wxOneCluster.Status.FloatingIP.ResourceID, wxOneCluster.Status.Project.ResourceID, vmsFP, ptr.To(true))
+		floatingIPAttachement, err := createFloatingGroup(ctx, wxOneClients.graphqlClient, wxOneCluster.Status.FloatingIP.ResourceID, wxOneCluster.Status.Project.ResourceID, vmsFP, ptr.To(false), ptr.To(true))
 		if err != nil {
 			log.Error(err, "Failed to create floating ip attachement")
 			return ctrl.Result{}, err
@@ -419,7 +498,8 @@ func (r *WXOneMachineReconciler) reconcileDelete(ctx context.Context, cluster *c
 		_, err = deleteFloatingGroupByFloatingIpIdAndInstanceId(ctx, wxOneClients.graphqlClient, wxOneCluster.Status.Project.ResourceID, wxOneCluster.Status.FloatingIP.ResourceID, wxOneMachine.Status.Instance.ResourceID)
 		if err != nil {
 			log.Error(err, "failed to delete floating group")
-			return ctrl.Result{}, err
+			// usually means it was deleted already, need to add further checks
+			// return ctrl.Result{}, err
 		}
 
 		wxOneMachine.Status.FloatingIPAttachement.ResourceID = ""

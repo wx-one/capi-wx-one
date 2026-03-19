@@ -40,10 +40,10 @@ mutation deleteFloatingGroupByFloatingIpIdAndInstanceId(
   $floatingIPId: UUID!
   $instanceId: UUID!
 ) {
-  deleteFloatingGroupByFloatingIpIdAndInstanceId(
+  detachFloatingGroup(
+    id: $floatingIPId
     projectId: $projectId
-    floatingIpId: $floatingIPId
-    instanceId: $instanceId
+    vms: [$instanceId]
   ) {
     err
     code
@@ -220,12 +220,14 @@ mutation createFloatingGroup(
   $projectId: UUID!
   $vms: [FloatingGroupVmInput]
   $natToVmsPrivateIp: Boolean
+  $attach: Boolean
 ) {
   createFloatingGroup(
     id: $id
     projectId: $projectId
     vms: $vms
     natToVmsPrivateIp: $natToVmsPrivateIp
+    attach: $attach
   ) {
     code
     err
@@ -275,6 +277,16 @@ query getFloatingIP($id: UUID!, $projectId: UUID!) {
     err
     msg {
       ip
+      attachedTo {
+        __typename
+        ... on FloatingIPInstanceAttachment {
+          natToVmsPrivateIp
+          vms {
+            id
+            vmId
+          }
+        }
+      }
     }
   }
 }
