@@ -48,6 +48,10 @@ import (
 	clog "sigs.k8s.io/cluster-api/util/log"
 )
 
+func (r *WXOneMachineReconciler) getOwnerMachine(ctx context.Context, wxOneMachine *infrav1.WXOneMachine) (*clusterv1.Machine, error) {
+	return util.GetOwnerMachine(ctx, r.Client, wxOneMachine.ObjectMeta)
+}
+
 func cloudInitYAMLToJSON(userData []byte) (json.RawMessage, error) {
 	// cloud-init commonly starts with "#cloud-config" (comment header).
 	// YAML parsers *can* handle comments, BUT your conversion path might still fail
@@ -252,9 +256,25 @@ WantedBy=multi-user.target
 	return json.RawMessage(updatedJSON), nil
 }
 
+const PreDrainHook = "pre-drain.delete.hook.machine.cluster.x-k8s.io/manage-ecmp-route"
+
 func (r *WXOneMachineReconciler) reconcileNormal(ctx context.Context, cluster *clusterv1.Cluster, wxOneCluster *infrav1.WXOneCluster, machine *clusterv1.Machine, wxOneMachine *infrav1.WXOneMachine) (res ctrl.Result, retErr error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("starting reconcile normal")
+
+	// add annotation if not exists
+	if machine.Annotations == nil {
+		machine.Annotations = make(map[string]string)
+	}
+
+	if _, ok := machine.Annotations[PreDrainHook]; !ok {
+		// add our hook to pause CAPI deletion later
+		machine.Annotations[PreDrainHook] = "true"
+		if err := r.Client.Update(ctx, machine); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	// Initialize the patch helper
 	patchHelper, err := patch.NewHelper(wxOneMachine, r.Client)
 	if err != nil {
@@ -491,6 +511,52 @@ func (r *WXOneMachineReconciler) reconcileDelete(ctx context.Context, cluster *c
 	if err != nil {
 		log.Error(err, "failed to create WXOneClients")
 		return ctrl.Result{}, err
+	}
+
+	machine, err = r.getOwnerMachine(ctx, wxOneMachine)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if _, ok := machine.Annotations[PreDrainHook]; ok {
+		log.Info("Lifecycle hook detected: Withdrawing ECMP route before drain")
+
+		// only do this on control plane nodes actuall assigned an ip
+		if util.IsControlPlaneMachine(machine) && wxOneMachine.Status.FloatingIPAttachement.ResourceID != "" {
+
+			// 1. WITHDRAW ECMP ROUTE
+			_, err = deleteFloatingGroupByFloatingIpIdAndInstanceId(
+				ctx,
+				wxOneClients.graphqlClient,
+				wxOneCluster.Status.Project.ResourceID,
+				wxOneCluster.Status.FloatingIP.ResourceID,
+				wxOneMachine.Status.Instance.ResourceID,
+			)
+			if err != nil {
+				log.Error(err, "failed to withdraw ECMP route, retrying...")
+				return ctrl.Result{}, err
+			}
+
+			wxOneMachine.Status.FloatingIPAttachement.ResourceID = ""
+			log.Info("patch machine")
+			if err := patchHelper.Patch(ctx, wxOneMachine); err != nil {
+				log.Error(err, "failed to patch WxoneMachine")
+				return ctrl.Result{}, err
+			}
+			log.Info("patched without errors")
+		}
+
+		// 2. REMOVE HOOK
+		// This unpauses CAPI to start 'cordon' and 'drain'
+		delete(machine.Annotations, PreDrainHook)
+		if err := r.Client.Update(ctx, machine); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		// 3. EXIT EARLY
+		// Stop here so we don't delete the VM instance yet.
+		log.Info("Route withdrawn and hook removed. Waiting for CAPI to drain.")
+		return ctrl.Result{}, nil
 	}
 
 	// if the deleted machine is a control-plane node, remove it from the load balancer configuration;
