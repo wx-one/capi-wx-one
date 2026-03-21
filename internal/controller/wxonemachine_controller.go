@@ -133,7 +133,7 @@ func (r *WXOneMachineReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 	if machine == nil {
-		log.Info("Waiting for Machine Controller to set OwnerRef on DockerMachine")
+		log.Info("Waiting for Machine Controller to set OwnerRef on WxoneMachine")
 		return ctrl.Result{}, nil
 	}
 
@@ -143,7 +143,7 @@ func (r *WXOneMachineReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// Fetch the Cluster.
 	cluster, err := util.GetClusterFromMetadata(ctx, r.Client, machine.ObjectMeta)
 	if err != nil {
-		log.Info("DockerMachine owner Machine is missing cluster label or cluster does not exist")
+		log.Info("WxoneMachine owner Machine is missing cluster label or cluster does not exist")
 		return ctrl.Result{}, err
 	}
 	if cluster == nil {
@@ -648,7 +648,7 @@ func (r *WXOneMachineReconciler) WXOneClusterToWXOneMachines(ctx context.Context
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *WXOneMachineReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
-	predicateLog := ctrl.LoggerFrom(ctx).WithValues("controller", "dockermachine")
+	predicateLog := ctrl.LoggerFrom(ctx).WithValues("controller", "wxonemachine")
 	clusterToWxOneMachines, err := util.ClusterToTypedObjectsMapper(mgr.GetClient(), &infrav1.WXOneMachineList{}, mgr.GetScheme())
 	if err != nil {
 		return err
@@ -658,7 +658,7 @@ func (r *WXOneMachineReconciler) SetupWithManager(ctx context.Context, mgr ctrl.
 		For(&infrav1.WXOneMachine{}).
 		Watches(
 			&clusterv1.Machine{},
-			handler.EnqueueRequestsFromMapFunc(util.MachineToInfrastructureMapFunc(infrav1.GroupVersion.WithKind("DockerMachine"))),
+			handler.EnqueueRequestsFromMapFunc(util.MachineToInfrastructureMapFunc(infrav1.GroupVersion.WithKind("WXOneMachine"))),
 			builder.WithPredicates(predicates.ResourceIsChanged(mgr.GetScheme(), predicateLog)),
 		).
 		Watches(
