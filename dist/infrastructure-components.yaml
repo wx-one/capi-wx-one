@@ -1248,7 +1248,7 @@ spec:
                 configMapKeyRef:
                   key: username
                   name: cluster-api-provider-wxone-wxone-config
-          image: registry-1.docker.io/wzrdtales/cluster-api-provider-wxone:v1.0.2
+          image: registry-1.docker.io/wzrdtales/cluster-api-provider-wxone:v1.0.3
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
