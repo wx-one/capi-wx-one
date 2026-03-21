@@ -535,7 +535,7 @@ func (r *WXOneMachineReconciler) reconcileDelete(ctx context.Context, cluster *c
 			)
 			if err != nil {
 				log.Error(err, "failed to withdraw ECMP route, retrying...")
-				return ctrl.Result{}, err
+				return ctrl.Result{RequeueAfter: 10 * time.Second}, err
 			}
 
 			wxOneMachine.Status.FloatingIPAttachement.ResourceID = ""
